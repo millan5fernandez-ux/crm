@@ -1,0 +1,324 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Manual de marca Millán CRM</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23ff5a1f%22/%3E%3Cpath%20d%3D%22M7%2025V7h4l5%208%205-8h4v18h-4V14.5l-4.2%206.6h-1.6L11%2014.5V25z%22%20fill%3D%22%230b0b0b%22/%3E%3Crect%20x%3D%2225%22%20y%3D%223%22%20width%3D%224%22%20height%3D%224%22%20fill%3D%22%230b0b0b%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<style>
+/* Concepto: hoja de especificaciones. Papel, tinta y un único naranja; etiquetas en mono con prefijo "//". */
+:root{
+  --paper:#f1f0ea; --card:#ffffff; --soft:#ebeae3; --line:#d3d2c9; --ink:#0b0b0b; --ink2:#46463f; --muted:#6f6f68;
+  --accent:#ff5a1f; --on-accent:#0b0b0b; --grid:rgba(0,0,0,.045);
+  --display:'Space Grotesk','Helvetica Neue',Arial,sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0c0c0b; --card:#151514; --soft:#1e1e1c; --line:#2e2e2b; --ink:#f1f0ea; --ink2:#c0bfb6; --muted:#8b8a82; --grid:rgba(255,255,255,.04); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0c0c0b; --card:#151514; --soft:#1e1e1c; --line:#2e2e2b; --ink:#f1f0ea; --ink2:#c0bfb6; --muted:#8b8a82; --grid:rgba(255,255,255,.04); color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;
+  color:var(--ink);font:16px/1.55 var(--display);padding-block:0 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--paper)}
+.wrap{max-width:1080px;margin:0 auto}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lbl{font:600 11px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lbl::before{content:"// ";color:var(--accent)}
+/* barra */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--paper);border-bottom:1px solid var(--ink);margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-left,0px))}
+.bar .wrap{display:flex;gap:6px 18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.bar b{font:700 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.bar b i{width:22px;height:22px;background:var(--accent);display:grid;place-items:center}
+.bar b i svg{width:16px;height:16px;fill:var(--on-accent)}
+.bar nav{display:flex;gap:4px 14px;flex-wrap:wrap}
+.bar nav a{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--ink2);padding:4px 0;border-bottom:2px solid transparent}
+.bar nav a:hover{color:var(--ink);border-color:var(--accent)}
+/* portada */
+.cover{padding-block:44px 28px}
+.cover h1{font:700 clamp(54px,12vw,150px)/.84 var(--display);letter-spacing:-.06em;text-transform:uppercase;margin:16px 0 18px;text-wrap:balance}
+.cover h1 span{color:var(--accent)}
+.cover p{max-width:60ch;color:var(--ink2);margin:0}
+.meta{display:flex;gap:8px 24px;flex-wrap:wrap;margin-top:22px;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.meta b{color:var(--ink)}
+/* secciones */
+section{padding-block:36px 8px;border-top:1px solid var(--ink);margin-top:28px;scroll-margin-top:64px}
+section>header{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px 32px;margin-bottom:22px}
+section h2{font:700 clamp(30px,5vw,52px)/.95 var(--display);letter-spacing:-.045em;text-transform:uppercase;margin:6px 0 0;text-wrap:balance}
+section header p{margin:0;color:var(--ink2);max-width:62ch;align-self:end}
+@media (max-width:760px){section>header{grid-template-columns:1fr}}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+.box{background:var(--card);border:1px solid var(--line);border-radius:2px;padding:16px;min-width:0}
+.box h3{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+.box h3::before{content:"// ";color:var(--accent)}
+.box p{margin:0 0 8px;color:var(--ink2);font-size:15px}
+.box p:last-child{margin:0}
+/* logo */
+.logos{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
+.tile{aspect-ratio:1/1;border:1px solid var(--line);border-radius:2px;display:grid;place-items:center;position:relative;min-width:0}
+.tile svg{width:46%;height:auto;max-width:130px}
+.tile small{position:absolute;left:10px;bottom:8px;font:600 10px var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.t-or{background:#ff5a1f}.t-or svg{fill:#0b0b0b}.t-or small{color:#0b0b0b}
+.t-bk{background:#0b0b0b}.t-bk svg{fill:#ff5a1f}.t-bk small{color:#f1f0ea}
+.t-wh{background:#f1f0ea;border-color:#0b0b0b}.t-wh svg{fill:#0b0b0b}.t-wh small{color:#0b0b0b}
+.t-ou{background:transparent;border:2px solid var(--ink)}.t-ou svg{fill:var(--ink)}.t-ou small{color:var(--ink)}
+.wm{display:flex;align-items:center;gap:14px;background:#0b0b0b;color:#f1f0ea;padding:14px 18px;border-radius:2px;width:max-content;max-width:100%}
+.wm i{width:44px;height:44px;background:#ff5a1f;display:grid;place-items:center;flex:none}
+.wm i svg{width:30px;height:30px;fill:#0b0b0b}
+.wm span{font:700 26px/1 var(--display);letter-spacing:-.03em;text-transform:uppercase}
+.wm small{display:block;font:500 10px var(--mono);letter-spacing:.08em;opacity:.65;margin-top:4px}
+.constr{width:100%;max-width:300px;aspect-ratio:1;margin:0 auto;display:block}
+/* color */
+.sw{display:grid;gap:0;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));border:1px solid var(--ink)}
+.sw button{all:unset;box-sizing:border-box;cursor:pointer;min-height:132px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);min-width:0}
+.sw button:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
+.sw .n{font:700 14px var(--display);letter-spacing:-.01em;text-transform:uppercase}
+.sw .h{font:500 11px var(--mono);letter-spacing:.04em}
+.sw .r{font:500 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+.sw .cp{font:600 9.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;opacity:0}
+.sw button:hover .cp,.sw button:focus-visible .cp{opacity:1}
+.theme-row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.theme-row h3{margin:0 0 8px;font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ratio{display:flex;gap:0;height:28px;border:1px solid var(--ink);margin-top:14px}
+.ratio i{display:block;height:100%}
+/* tipografía */
+.spec{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr);gap:4px 24px;padding:16px 0;border-top:1px solid var(--line);align-items:baseline}
+.spec:first-of-type{border-top:0}
+.spec .k{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.spec .k b{display:block;color:var(--ink);font-size:12px;margin-bottom:2px}
+.spec .v{min-width:0;overflow-wrap:anywhere}
+@media (max-width:640px){.spec{grid-template-columns:1fr}}
+.s-disp{font:700 clamp(40px,9vw,88px)/.86 var(--display);letter-spacing:-.055em;text-transform:uppercase}
+.s-disp span{color:var(--accent)}
+.s-h2{font:700 30px/1 var(--display);letter-spacing:-.04em;text-transform:uppercase}
+.s-num{font:700 clamp(34px,6vw,50px)/1 var(--mono);letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+.s-body{font:400 15px/1.55 var(--display);max-width:56ch}
+.s-lbl{font:600 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.s-lbl::before{content:"// ";color:var(--accent)}
+.alpha{font:500 15px/1.5 var(--mono);color:var(--ink2);overflow-wrap:anywhere}
+/* componentes */
+.demo{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.b{font:600 11.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:9px 14px;border:1px solid var(--ink);border-radius:2px;background:var(--card);color:var(--ink);cursor:pointer;transition:background .2s,color .2s}
+.b:hover{background:var(--ink);color:var(--paper)}
+.b.p{background:var(--accent);color:var(--on-accent);font-weight:700}
+.b.p:hover{background:var(--ink);color:var(--paper)}
+.b.d{background:transparent;color:#d3243b;border-color:#d3243b}
+.pill{font:700 10px var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border:1px solid currentColor;border-radius:2px}
+.pill.g{color:#0f8a43;background:#d9f4e2}.pill.w{color:#8a5a00;background:#fff0c9}.pill.r{color:#d3243b;background:#ffdada}
+.chip{font:600 11px var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border:1px solid var(--line);border-radius:2px;background:var(--card);color:var(--ink2)}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.kpis{display:grid;grid-template-columns:1fr 1fr}
+.kpis div{padding:14px;border:1px solid var(--line);background:var(--card);margin-left:-1px}
+.kpis div:first-child{background:#0b0b0b;color:#f1f0ea;border-color:#0b0b0b;margin-left:0}
+.kpis .l{font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.kpis div:first-child .l{color:#ff5a1f}.kpis .l::before{content:"// ";color:#ff5a1f}
+.kpis .x{font:700 34px/1.1 var(--mono);letter-spacing:-.06em;margin-top:6px}
+.bars{display:flex;align-items:flex-end;gap:8px;height:120px;border-bottom:1px solid var(--ink)}
+.bars i{flex:1;background:var(--ink)}.bars i.t{background:var(--accent)}
+.bars i.f{background:repeating-linear-gradient(45deg,var(--ink) 0 2px,transparent 2px 6px);border:1px solid var(--ink);border-bottom:0}
+.input{width:100%;font:15px var(--display);padding:9px 10px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:2px;margin-top:6px}
+.input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.sw2{display:flex;align-items:center;gap:10px;font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.sw2 span{width:34px;height:18px;border:1px solid var(--ink);border-radius:999px;background:var(--accent);position:relative}
+.sw2 span::after{content:"";position:absolute;top:2px;left:18px;width:12px;height:12px;border-radius:50%;background:#0b0b0b}
+/* reglas */
+.rules{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.rules ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.rules li{padding-left:22px;position:relative;color:var(--ink2);font-size:15px}
+.rules li::before{position:absolute;left:0;top:0;font:700 13px var(--mono)}
+.yes li::before{content:"+";color:#0f8a43}.no li::before{content:"×";color:#d3243b}
+.yes h3{color:#0f8a43}.no h3{color:#d3243b}
+.voice{display:grid;gap:10px}
+.voice q{display:block;font:600 14px var(--mono);letter-spacing:.01em;padding:10px 12px;border:1px solid var(--line);background:var(--soft);quotes:none}
+.voice q.bad{text-decoration:line-through;color:var(--muted)}
+.mono{font-family:var(--mono);font-size:.92em}
+.dim{display:grid;gap:6px;font:500 12px var(--mono);color:var(--ink2)}
+.dim div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--line);padding-bottom:6px}
+.dim b{color:var(--ink)}
+footer{margin-top:44px;border-top:1px solid var(--ink);padding-top:14px;display:flex;gap:8px 24px;justify-content:space-between;flex-wrap:wrap}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--paper);font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+
+<div class="bar"><div class="wrap">
+  <b><i><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z"/><rect x="25" y="3" width="4" height="4"/></svg></i>Millán CRM · Marca</b>
+  <nav aria-label="Secciones"><a href="#logo">Logo</a><a href="#color">Color</a><a href="#tipografia">Tipografía</a><a href="#componentes">Componentes</a><a href="#escena">Escena 3D</a><a href="#voz">Voz</a><a href="#reglas">Reglas</a></nav>
+</div></div>
+
+<main class="wrap">
+  <div class="cover">
+    <span class="lbl">Manual de marca · v1.0</span>
+    <h1>Millán <span>CRM</span></h1>
+    <p>Un panel personal para ver la semana de un vistazo: gastos, gym, comida, cuerpo y calendario. Su identidad es la de una hoja de especificaciones: papel, tinta negra, un único naranja y etiquetas técnicas en monoespaciada.</p>
+    <div class="meta"><span>Idioma <b>Español</b></span><span>Temas <b>Claro y oscuro</b></span><span>Acento <b>#FF5A1F</b></span><span>Esquinas <b>2 px</b></span></div>
+  </div>
+
+  <section id="logo">
+    <header><div><span class="lbl">01</span><h2>Logo</h2></div><p>Una M geométrica construida con rectas. Los dos picos recuerdan una gráfica de barras y el cuadrado de la esquina marca el punto de datos de hoy.</p></header>
+    <div class="logos">
+      <div class="tile t-or"><svg viewBox="0 0 32 32" aria-label="Logo sobre naranja"><path d="M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z"/><rect x="25" y="3" width="4" height="4"/></svg><small>Principal · naranja</small></div>
+      <div class="tile t-bk"><svg viewBox="0 0 32 32" aria-label="Logo sobre negro"><path d="M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z"/><rect x="25" y="3" width="4" height="4"/></svg><small>Sobre negro</small></div>
+      <div class="tile t-wh"><svg viewBox="0 0 32 32" aria-label="Logo sobre papel"><path d="M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z"/><rect x="25" y="3" width="4" height="4"/></svg><small>Sobre papel</small></div>
+      <div class="tile t-ou"><svg viewBox="0 0 32 32" aria-label="Logo de un solo color"><path d="M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z"/><rect x="25" y="3" width="4" height="4"/></svg><small>Un color</small></div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div class="box"><h3>Con nombre</h3>
+        <div class="wm"><i><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z"/><rect x="25" y="3" width="4" height="4"/></svg></i><div><span>Millán CRM</span><small>DOMINGO, 25 DE OCTUBRE</small></div></div>
+        <p style="margin-top:12px">Es la cabecera de la barra lateral. El nombre va siempre en mayúsculas con Space Grotesk Bold. Debajo, la fecha en mono.</p></div>
+      <div class="box"><h3>Construcción</h3>
+        <svg class="constr" viewBox="0 0 32 32" role="img" aria-label="Retícula de 32 por 32 con el logo"><rect width="32" height="32" fill="#ff5a1f"/><g stroke="#0b0b0b" stroke-opacity=".28" stroke-width=".1"><path d="M4 0V32M7 0V32M11 0V32M16 0V32M21 0V32M25 0V32M28 0V32M0 4H32M0 7H32M0 11H32M0 16H32M0 21H32M0 25H32M0 28H32"/></g><path d="M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z" fill="#0b0b0b"/><rect x="25" y="3" width="4" height="4" fill="#0b0b0b"/></svg></div>
+      <div class="box"><h3>Medidas</h3>
+        <div class="dim"><div><span>Retícula</span><b>32 × 32</b></div><div><span>Trazo de la M</span><b>4 u</b></div><div><span>Margen libre</span><b>½ M</b></div><div><span>Tamaño mínimo</span><b>16 px</b></div><div><span>Esquinas del icono</span><b>6 / 32</b></div></div>
+        <p style="margin-top:12px">Como favicon se usa la versión naranja con esquinas redondeadas (archivo <span class="mono">favicon.svg</span>).</p></div>
+    </div>
+  </section>
+
+  <section id="color">
+    <header><div><span class="lbl">02</span><h2>Color</h2></div><p>Dos neutros con tinte cálido y un solo acento. El naranja manda: se usa en lo activo, en el día de hoy y en las llamadas a la acción. Pulsa un color para copiar su código.</p></header>
+    <div class="theme-row">
+      <div><h3>Tema claro</h3>
+        <div class="sw" role="list">
+          <button role="listitem" data-c="#F1F0EA" style="background:#f1f0ea;color:#0b0b0b"><span class="n">Papel</span><span><span class="h">#F1F0EA</span><br><span class="r">Fondo</span><br><span class="cp">Copiar</span></span></button>
+          <button role="listitem" data-c="#FFFFFF" style="background:#fff;color:#0b0b0b"><span class="n">Tarjeta</span><span><span class="h">#FFFFFF</span><br><span class="r">Superficie</span><br><span class="cp">Copiar</span></span></button>
+          <button role="listitem" data-c="#0B0B0B" style="background:#0b0b0b;color:#f1f0ea"><span class="n">Tinta</span><span><span class="h">#0B0B0B</span><br><span class="r">Texto y bordes</span><br><span class="cp">Copiar</span></span></button>
+          <button role="listitem" data-c="#46463F" style="background:#46463f;color:#f1f0ea"><span class="n">Tinta 2</span><span><span class="h">#46463F</span><br><span class="r">Texto secundario</span><br><span class="cp">Copiar</span></span></button>
+          <button role="listitem" data-c="#D3D2C9" style="background:#d3d2c9;color:#0b0b0b"><span class="n">Línea</span><span><span class="h">#D3D2C9</span><br><span class="r">Bordes finos</span><br><span class="cp">Copiar</span></span></button>
+        </div></div>
+      <div><h3>Tema oscuro</h3>
+        <div class="sw" role="list">
+          <button role="listitem" data-c="#0C0C0B" style="background:#0c0c0b;color:#f1f0ea"><span class="n">Noche</span><span><span class="h">#0C0C0B</span><br><span class="r">Fondo</span><br><span class="cp">Copiar</span></span></button>
+          <button role="listitem" data-c="#151514" style="background:#151514;color:#f1f0ea"><span class="n">Tarjeta</span><span><span class="h">#151514</span><br><span class="r">Superficie</span><br><span class="cp">Copiar</span></span></button>
+          <button role="listitem" data-c="#F1F0EA" style="background:#f1f0ea;color:#0b0b0b"><span class="n">Tinta</span><span><span class="h">#F1F0EA</span><br><span class="r">Texto y bordes</span><br><span class="cp">Copiar</span></span></button>
+          <button role="listitem" data-c="#C0BFB6" style="background:#c0bfb6;color:#0b0b0b"><span class="n">Tinta 2</span><span><span class="h">#C0BFB6</span><br><span class="r">Texto secundario</span><br><span class="cp">Copiar</span></span></button>
+          <button role="listitem" data-c="#2E2E2B" style="background:#2e2e2b;color:#f1f0ea"><span class="n">Línea</span><span><span class="h">#2E2E2B</span><br><span class="r">Bordes finos</span><br><span class="cp">Copiar</span></span></button>
+        </div></div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div class="box"><h3>Acento</h3>
+        <div class="sw" style="grid-template-columns:1fr"><button data-c="#FF5A1F" style="background:#ff5a1f;color:#0b0b0b;min-height:150px"><span class="n">Naranja Millán</span><span><span class="h">#FF5A1F</span><br><span class="r">RGB 255 · 90 · 31</span><br><span class="cp">Copiar</span></span></button></div>
+        <p style="margin-top:12px">Siempre con texto negro encima (contraste superior a 6:1). Nunca con texto blanco.</p>
+        <div class="ratio" aria-label="Proporción de uso: 60 % papel, 25 % tinta, 10 % naranja, 5 % resto"><i style="width:60%;background:var(--paper)"></i><i style="width:25%;background:var(--ink)"></i><i style="width:10%;background:var(--accent)"></i><i style="width:5%;background:var(--line)"></i></div>
+        <p class="s-lbl" style="margin-top:8px;font-size:10px">60 papel · 25 tinta · 10 naranja · 5 línea</p></div>
+      <div class="box"><h3>Series de datos</h3>
+        <div class="sw" style="grid-template-columns:repeat(3,1fr)">
+          <button data-c="#FF5A1F" style="background:#ff5a1f;color:#0b0b0b;min-height:84px"><span class="h">#FF5A1F</span><span class="cp">Copiar</span></button>
+          <button data-c="#0B0B0B" style="background:#0b0b0b;color:#f1f0ea;min-height:84px"><span class="h">#0B0B0B</span><span class="cp">Copiar</span></button>
+          <button data-c="#2B59FF" style="background:#2b59ff;color:#fff;min-height:84px"><span class="h">#2B59FF</span><span class="cp">Copiar</span></button>
+          <button data-c="#E5398A" style="background:#e5398a;color:#fff;min-height:84px"><span class="h">#E5398A</span><span class="cp">Copiar</span></button>
+          <button data-c="#8A4DFF" style="background:#8a4dff;color:#fff;min-height:84px"><span class="h">#8A4DFF</span><span class="cp">Copiar</span></button>
+          <button data-c="#77776F" style="background:#77776f;color:#fff;min-height:84px"><span class="h">#77776F</span><span class="cp">Copiar</span></button>
+        </div>
+        <p style="margin-top:12px">Para gráficas con varias categorías, en este orden. En oscuro, el negro pasa a papel (#F1F0EA).</p></div>
+      <div class="box"><h3>Estados</h3>
+        <div class="demo" style="margin-bottom:12px"><span class="pill g">En objetivo</span><span class="pill w">Por encima</span><span class="pill r">Sin ingresos</span></div>
+        <div class="sw" style="grid-template-columns:repeat(3,1fr)">
+          <button data-c="#0F8A43" style="background:#0f8a43;color:#fff;min-height:84px"><span class="h">#0F8A43</span><span class="r">Bien</span></button>
+          <button data-c="#A86A00" style="background:#a86a00;color:#fff;min-height:84px"><span class="h">#A86A00</span><span class="r">Aviso</span></button>
+          <button data-c="#D3243B" style="background:#d3243b;color:#fff;min-height:84px"><span class="h">#D3243B</span><span class="r">Error</span></button>
+        </div>
+        <p style="margin-top:12px">El verde, el ámbar y el rojo solo indican estado. No son colores de marca.</p></div>
+    </div>
+  </section>
+
+  <section id="tipografia">
+    <header><div><span class="lbl">03</span><h2>Tipografía</h2></div><p>Dos familias de Google Fonts. Space Grotesk, en mayúsculas y muy apretada, para títulos. JetBrains Mono para cifras, etiquetas y botones.</p></header>
+    <div class="box">
+      <div class="spec"><div class="k"><b>Display</b>Space Grotesk 700<br>46–104 px · −0,055 em</div><div class="v s-disp">Dash<span>board</span></div></div>
+      <div class="spec"><div class="k"><b>Título de módulo</b>Space Grotesk 700<br>30 px · −0,04 em</div><div class="v s-h2">Gasto del mes</div></div>
+      <div class="spec"><div class="k"><b>Cifra</b>JetBrains Mono 700<br>30–50 px · −0,06 em</div><div class="v s-num">338,48 €</div></div>
+      <div class="spec"><div class="k"><b>Etiqueta</b>JetBrains Mono 600<br>10,5 px · +0,12 em</div><div class="v s-lbl">Calorías hoy</div></div>
+      <div class="spec"><div class="k"><b>Texto</b>Space Grotesk 400<br>15 px · interlínea 1,55</div><div class="v s-body">Los formularios usan texto normal en minúsculas para que escribir y leer sea cómodo. Las etiquetas pequeñas van en mayúsculas.</div></div>
+      <div class="spec"><div class="k"><b>Alfabeto</b>JetBrains Mono 500</div><div class="v alpha">ABCDEFGHIJKLMNÑOPQRSTUVWXYZ<br>abcdefghijklmnñopqrstuvwxyz<br>0123456789 € kg kcal % · / + −</div></div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div class="box"><h3>El prefijo //</h3><p>Toda etiqueta de tarjeta empieza por <span class="mono">//</span> en naranja. Es la firma tipográfica de la marca y se usa solo en etiquetas, no en frases.</p></div>
+      <div class="box"><h3>Cifras</h3><p>Siempre en mono con ancho tabular, para que las columnas queden alineadas. Euros con coma decimal y símbolo detrás: <span class="mono">338,48 €</span>.</p></div>
+    </div>
+  </section>
+
+  <section id="componentes">
+    <header><div><span class="lbl">04</span><h2>Componentes</h2></div><p>Esquinas de 2 px, bordes de 1 px y ninguna sombra difusa. La jerarquía se marca con tinta invertida y con el naranja, no con relieve.</p></header>
+    <div class="grid">
+      <div class="box"><h3>Botones</h3>
+        <div class="demo"><button class="b p" type="button">＋ Nuevo gasto</button><button class="b" type="button">Cerrar</button><button class="b d" type="button">Borrar</button></div>
+        <p style="margin-top:12px">Un solo botón naranja por pantalla. Al pasar el ratón se invierten a tinta.</p></div>
+      <div class="box"><h3>Etiquetas y filtros</h3>
+        <div class="demo"><span class="chip on">Todos</span><span class="chip">Comida</span><span class="chip">Transporte</span></div>
+        <div class="demo" style="margin-top:10px"><span class="pill g">En objetivo</span><span class="pill w">Por encima</span></div></div>
+      <div class="box"><h3>Campo</h3>
+        <label for="demo-f" class="s-lbl" style="font-size:10.5px">Alimento</label>
+        <input class="input" id="demo-f" type="text" placeholder="Arroz con pollo">
+        <p style="margin-top:12px">Borde fino que pasa a contorno naranja al enfocar.</p></div>
+      <div class="box"><h3>Interruptor</h3>
+        <div class="sw2"><span aria-hidden="true"></span>Modo claro</div>
+        <p style="margin-top:12px">Naranja cuando está activo. Recuerda la elección en el navegador.</p></div>
+      <div class="box" style="grid-column:1/-1"><h3>Tarjeta de cifras</h3>
+        <div class="kpis"><div><div class="l">Gasto del mes</div><div class="x">338,48 €</div></div><div><div class="l">Series</div><div class="x">16</div></div></div>
+        <p style="margin-top:12px">La primera cifra de una fila va en negro invertido. Es la que se mira primero.</p></div>
+      <div class="box" style="grid-column:1/-1"><h3>Gráfica de barras</h3>
+        <div class="bars" aria-label="Ejemplo: 9, 7, 0, 0, 0, 0 y hoy"><i style="height:86%"></i><i style="height:66%"></i><i style="height:4%"></i><i style="height:4%"></i><i style="height:4%"></i><i style="height:4%"></i><i class="t" style="height:4%"></i></div>
+        <p style="margin-top:12px">Días pasados en tinta, hoy en naranja. Los días que faltan se dibujan rayados. Sin degradados ni brillos.</p>
+        <div class="bars" style="margin-top:12px;height:70px"><i style="height:60%"></i><i style="height:80%"></i><i class="t" style="height:50%"></i><i class="f" style="height:70%"></i><i class="f" style="height:70%"></i><i class="f" style="height:70%"></i><i class="f" style="height:70%"></i></div></div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div class="box"><h3>Disposición</h3>
+        <div class="dim"><div><span>Barra lateral</span><b>236 px</b></div><div><span>Rejilla de tarjetas</span><b>12 columnas</b></div><div><span>Separación</span><b>12 px</b></div><div><span>Padding de tarjeta</span><b>16 px</b></div><div><span>Radio</span><b>2 px</b></div><div><span>Fondo</span><b>Cuadrícula de 32 px</b></div></div></div>
+      <div class="box"><h3>Móvil</h3><p>Una columna. La navegación pasa a una barra inferior fija y cada módulo se abre como una hoja que sube desde abajo.</p></div>
+    </div>
+  </section>
+
+  <section id="escena">
+    <header><div><span class="lbl">05</span><h2>Escena 3D</h2></div><p>El escritorio isométrico es el elemento más reconocible. Es una ilustración de objetos reales, con una paleta que sigue a la de la marca.</p></header>
+    <div class="grid">
+      <div class="box"><h3>Plataforma</h3><p>Suelo en tono papel (#E9E7DD en claro, #1C1C1A en oscuro), contorno naranja y base negra. Las cinco zonas llevan un tinte suave.</p></div>
+      <div class="box"><h3>Zonas</h3><p>Gym con mancuernas, Gastos con una hucha, Comida con la nevera, Personal con la cama, Calendario con el tablón y Mi escritorio en el centro.</p></div>
+      <div class="box"><h3>Etiquetas</h3><p>Cajas con borde negro y una franja de color a la izquierda. En mono, en mayúsculas el título y en minúsculas el dato. Al pasar el cursor, sombra dura del color de la zona.</p></div>
+      <div class="box"><h3>Movimiento</h3><p>Entrada con zoom suave, balanceo casi imperceptible y destellos al guardar un registro. Con "reducir movimiento" activado, la escena queda quieta.</p></div>
+    </div>
+  </section>
+
+  <section id="voz">
+    <header><div><span class="lbl">06</span><h2>Voz</h2></div><p>Español de España, tuteo, frases cortas. Dice lo que pasa y lo que hace cada botón. Sin adornos ni exclamaciones.</p></header>
+    <div class="grid">
+      <div class="box"><h3>Así sí</h3><div class="voice"><q>Guardado</q><q>Elige si has ido ese día para empezar a registrar.</q><q>Añade macros para ver el reparto.</q><q>2.500 kcal por tomar</q></div></div>
+      <div class="box"><h3>Así no</h3><div class="voice"><q class="bad">¡Genial! Tu registro se ha almacenado correctamente 🎉</q><q class="bad">Operación completada con éxito</q><q class="bad">Error 500</q></div></div>
+      <div class="box"><h3>Datos y formatos</h3><div class="dim"><div><span>Moneda</span><b>338,48 €</b></div><div><span>Fecha corta</span><b>21 Oct</b></div><div><span>Peso</span><b>76,6 kg</b></div><div><span>Series</span><b>Sin calentamiento</b></div><div><span>Botones</span><b>Verbo + objeto</b></div></div></div>
+    </div>
+  </section>
+
+  <section id="reglas">
+    <header><div><span class="lbl">07</span><h2>Reglas</h2></div><p>Lo mínimo para que cualquier pantalla nueva siga pareciendo parte del mismo panel.</p></header>
+    <div class="rules">
+      <div class="box yes"><h3>Hacer</h3><ul>
+        <li>Usar el naranja solo para lo activo, hoy y la acción principal.</li>
+        <li>Escribir las etiquetas en mono, en mayúsculas y con <span class="mono">//</span>.</li>
+        <li>Mantener esquinas de 2 px y bordes de 1 px.</li>
+        <li>Definir cada color como variable para que funcione en claro y oscuro.</li>
+        <li>Poner texto negro sobre naranja.</li>
+        <li>Respetar "reducir movimiento" y mostrar el foco con contorno naranja.</li></ul></div>
+      <div class="box no"><h3>Evitar</h3><ul>
+        <li>Degradados, desenfoques de cristal y sombras difusas.</li>
+        <li>Texto blanco sobre naranja.</li>
+        <li>Más de un botón naranja en la misma vista.</li>
+        <li>Iconos de emoji. Se usan iconos de línea de 1,8 px.</li>
+        <li>Deformar, girar o recolorear el logo fuera de las cuatro versiones.</li>
+        <li>Usar verde, ámbar o rojo como decoración.</li></ul></div>
+    </div>
+  </section>
+
+  <footer><span class="lbl">Millán CRM · Manual de marca v1.0</span><span class="lbl">Octubre 2026</span></footer>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var t=document.getElementById('toast'),to;
+  function say(m){t.textContent=m;t.classList.add('on');clearTimeout(to);to=setTimeout(function(){t.classList.remove('on')},1400)}
+  function fallback(c){var i=document.createElement('input');i.value=c;i.style.position='fixed';i.style.opacity='0';document.body.appendChild(i);i.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(i)}
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('[data-c]');if(!b)return;
+    var c=b.getAttribute('data-c');
+    try{navigator.clipboard.writeText(c).then(function(){say('Copiado '+c)},function(){fallback(c);say('Copiado '+c)})}catch(x){fallback(c);say('Copiado '+c)}
+  });
+})();
+</script>
+</body></html>
