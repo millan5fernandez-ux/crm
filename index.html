@@ -1,6 +1,6 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#ff5a1f"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Millán CRM"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>Millán CRM</title>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#ff3b3b"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Millán CRM"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>Millán CRM</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23ff5a1f%22/%3E%3Cpath d=%22M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z%22 fill=%22%230b0b0b%22/%3E%3Crect x=%2225%22 y=%223%22 width=%224%22 height=%224%22 fill=%22%230b0b0b%22/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23ff3b3b%22/%3E%3Cpath d=%22M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z%22 fill=%22%230b0b0b%22/%3E%3Crect x=%2225%22 y=%223%22 width=%224%22 height=%224%22 fill=%22%230b0b0b%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
 /* Layout: cabecera fija con pestañas; cada módulo = fila de tarjetas (formulario, métricas, gráficas) y lista editable debajo. */
@@ -396,8 +396,8 @@ body.drawer-open #rail{display:none}
   --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   --page:#f1f0ea; --bg:#f1f0ea; --card:#ffffff; --soft:#ebeae3; --line:#d3d2c9; --edge:#0b0b0b;
   --ink:#0b0b0b; --ink2:#46463f; --muted:#77776f;
-  --accent:#ff5a1f; --accent-ink:#0b0b0b;
-  --s1:#ff5a1f; --s2:#0b0b0b; --s3:#2b59ff; --s4:#e5398a; --s5:#8a4dff; --s6:#77776f;
+  --accent:#ff3b3b; --accent-ink:#0b0b0b;
+  --s1:#ff3b3b; --s2:#0b0b0b; --s3:#2b59ff; --s4:#e5398a; --s5:#8a4dff; --s6:#77776f;
   --good:#0f8a43; --warn:#a86a00; --bad:#d3243b;
   --pill-good:#d9f4e2; --pill-warn:#fff0c9; --pill-bad:#ffdada;
   --floor:#e9e7dd; --grid:rgba(0,0,0,.045); --shadow:none; --shadow-lg:0 24px 60px rgba(0,0,0,.18);
@@ -1747,13 +1747,13 @@ function initScene(){
   var floorMat=M('#10153a',{roughness:.9});
   var floor=new T.Mesh(Bx(27,.7,21),floorMat);floor.position.y=-.35;floor.receiveShadow=true;scene.add(floor);
   var base=new T.Mesh(Bx(26,.6,20),M('#070920',{roughness:1}));base.position.y=-1;scene.add(base);
-  var neon=new T.LineSegments(new T.EdgesGeometry(Bx(27,.7,21)),new T.LineBasicMaterial({color:0xff5a1f,transparent:true,opacity:1}));neon.position.y=-.35;scene.add(neon);
+  var neon=new T.LineSegments(new T.EdgesGeometry(Bx(27,.7,21)),new T.LineBasicMaterial({color:0xff3b3b,transparent:true,opacity:1}));neon.position.y=-.35;scene.add(neon);
   var neon2=new T.LineSegments(new T.EdgesGeometry(Bx(26,.6,20)),new T.LineBasicMaterial({color:0x0b0b0b,transparent:true,opacity:.9}));neon2.position.y=-1;scene.add(neon2);
 
   function theme(){
     var cs=getComputedStyle(document.documentElement);
     var bg=new T.Color(cs.getPropertyValue('--bg').trim()||'#e9edf1');
-    scene.background=null;floorMat.color.set(cs.getPropertyValue('--floor').trim()||'#e9e7dd');neon.material.color.set(cs.getPropertyValue('--accent').trim()||'#ff5a1f');neon2.material.color.set(cs.getPropertyValue('--ink').trim()||'#0b0b0b');base.material.color.set(cs.getPropertyValue('--ink').trim()||'#0b0b0b');
+    scene.background=null;floorMat.color.set(cs.getPropertyValue('--floor').trim()||'#e9e7dd');neon.material.color.set(cs.getPropertyValue('--accent').trim()||'#ff3b3b');neon2.material.color.set(cs.getPropertyValue('--ink').trim()||'#0b0b0b');base.material.color.set(cs.getPropertyValue('--ink').trim()||'#0b0b0b');
     var dark=(bg.r+bg.g+bg.b)/3<.3;if(!dark){amb.intensity=.78;sun.intensity=.7;return}amb.intensity=dark?.5:.62;sun.intensity=dark?.55:.62;
   }
   theme();
