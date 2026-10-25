@@ -2062,7 +2062,7 @@ function initScene(){
   cv.addEventListener('pointerup',function(e){endPtr(e,true)});
   cv.addEventListener('pointercancel',function(e){endPtr(e,false)});
   cv.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse'&&!drag)setHover(null)});
-  cv.addEventListener('wheel',function(e){e.preventDefault();ct.zoom=clamp(ct.zoom*(e.deltaY<0?1.1:.91),.7,3)},{passive:false});
+  ($('#stage')||cv).addEventListener('wheel',function(e){e.preventDefault();ct.zoom=clamp(ct.zoom*(e.deltaY<0?1.1:.91),.7,3)},{passive:false});
   $('#ctl').addEventListener('click',function(e){
     var b=e.target.closest('[data-ctl]');if(!b)return;
     var a=b.dataset.ctl;
