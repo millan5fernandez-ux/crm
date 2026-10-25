@@ -1035,7 +1035,7 @@ function builderHtml(){
       h+='<div class="fa"><button type="button" class="btn" data-act="gadd">+ Añadir ejercicio</button></div>';
       h+='<div id="gprev" style="margin-top:12px">'+previewHtml()+'</div>';
     }
-    h+='<label class="f full" style="margin-top:12px" for="gnote"><span>Nota (opcional)</span><input id="gnote" type="text" maxlength="140" placeholder="Cómo fue la sesión" value="'+esc(s.note)+'"></label>';
+    if(s.went)h+='<label class="f full" style="margin-top:12px" for="gnote"><span>Nota (opcional)</span><input id="gnote" type="text" maxlength="140" placeholder="Cómo fue la sesión" value="'+esc(s.note)+'"></label>';
     h+='<div class="fa"><button class="btn primary" type="submit">'+(s.went?'Guardar sesión':'Guardar descanso')+'</button>';
     if(s.exists)h+='<button class="btn'+(ui.del==='gday'?' danger':'')+'" type="button" data-act="gdelday">'+(ui.del==='gday'?'Confirmar: borrar este día':'Borrar este día')+'</button>';
     if(ui.gmsg)h+='<span class="pill good" role="status">✓ '+esc(ui.gmsg)+'</span>';
