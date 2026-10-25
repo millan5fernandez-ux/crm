@@ -681,6 +681,18 @@ function adopt(d){var e=EMPTY(),ds=e.set;S=Object.assign(e,d);S.set=Object.assig
 var S=EMPTY();
 try{var raw=localStorage.getItem(LS);if(raw){var o=JSON.parse(raw);if(o&&o.v===1)adopt(o)}}catch(e){}
 
+var SB={url:'https://lqnzdqsywloerdrolyhy.supabase.co',key:'sb_publishable_xuS-THIncu_0AmVKQeJ7XQ_L-9U7TiW',ls:'bitacora-sb'};
+var sbS=null,sbNote='';
+function jwt(t){try{return JSON.parse(decodeURIComponent(escape(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))))}catch(e){return {}}}
+function sbStore(o){sbS=o;try{if(o)localStorage.setItem(SB.ls,JSON.stringify(o));else localStorage.removeItem(SB.ls)}catch(e){}}
+function sbFromTokens(a,r){var p=jwt(a);sbStore({access_token:a,refresh_token:r,exp:(p.exp||0)*1000,uid:p.sub,email:p.email||''})}
+try{var _r=localStorage.getItem(SB.ls);if(_r)sbS=JSON.parse(_r)}catch(e){}
+(function(){var h=(location.hash||'').slice(1);if(h.indexOf('access_token=')<0&&h.indexOf('error_description=')<0)return;
+  var q=new URLSearchParams(h);
+  if(q.get('access_token')&&q.get('refresh_token'))sbFromTokens(q.get('access_token'),q.get('refresh_token'));
+  else if(q.get('error_description'))sbNote='No se pudo confirmar el correo: '+q.get('error_description');
+  try{history.replaceState(null,'',location.pathname+location.search+'#escritorio')}catch(e){}
+})();
 var TABS=['escritorio','resumen','gastos','gym','comida','cuerpo','metas'];
 var h0=(location.hash||'').slice(1);
 var ui={tab:TABS.indexOf(h0)>-1?h0:'escritorio',month:'',day:'',ex:'',q:'',cat:'',edit:null,del:'',date:{},reset:false,backup:'',anim:true,cal:'',sel:''};
@@ -696,8 +708,84 @@ function flush(){
   saving=true;dirty=false;
   dbDoc.set(JSON.parse(JSON.stringify(S))).then(function(){setSync('Guardado en tu cuenta')},function(){setSync('No se pudo guardar en tu cuenta; los datos siguen en este dispositivo')}).then(function(){saving=false;if(dirty)flush()});
 }
+var SYNC_LISTS=['gastos','ingresos','gym','comida','cuerpo','plans','gymdays'];
+function sbSay(t){sbNote=t;var e=$('#sbmsg');if(e)e.textContent=t}
+function sbReq(path,o,retry){
+  o=o||{};var h=Object.assign({apikey:SB.key,'Content-Type':'application/json'},o.headers||{});
+  h.Authorization='Bearer '+((sbS&&sbS.access_token)||SB.key);
+  return fetch(SB.url+path,{method:o.method||'GET',headers:h,body:o.body}).then(function(r){
+    if(r.status===401&&sbS&&sbS.refresh_token&&!retry)return sbRefresh().then(function(){return sbReq(path,o,true)});
+    return r.text().then(function(t){var j=null;try{j=t?JSON.parse(t):null}catch(e){}if(!r.ok){var m=(j&&(j.msg||j.error_description||j.message))||('Error '+r.status);throw new Error(m)}return j})});
+}
+function sbRefresh(){
+  return fetch(SB.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:sbS.refresh_token})}).then(function(r){
+    return r.json().then(function(j){if(!r.ok||!j.access_token){sbStore(null);throw new Error('La sesión ha caducado. Vuelve a entrar.')}sbFromTokens(j.access_token,j.refresh_token)})});
+}
+function sbMerge(a,b){
+  var base=(a.rev||0)>=(b.rev||0)?a:b,oth=base===a?b:a,out=JSON.parse(JSON.stringify(base));
+  SYNC_LISTS.forEach(function(k){
+    var ids={};(out[k]||[]).forEach(function(x){ids[x.id]=1});
+    var dates={};if(k==='gymdays')(out[k]||[]).forEach(function(x){dates[x.date]=1});
+    (oth[k]||[]).forEach(function(x){if(ids[x.id])return;if(k==='gymdays'&&dates[x.date])return;(out[k]=out[k]||[]).push(x)});
+  });
+  out.example=false;return out;
+}
+function sbApply(d){adopt(d);try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}render()}
+function sbPull(first){
+  if(!sbS||saving||dirty)return Promise.resolve();
+  return sbReq('/rest/v1/crm_state?select=data,updated_at&user_id=eq.'+sbS.uid).then(function(rows){
+    var d=rows&&rows[0]&&rows[0].data,linked='';try{linked=localStorage.getItem('bitacora-sb-linked')||''}catch(e){}
+    if(d&&d.v===1){
+      if(first&&linked!==sbS.uid&&!isEmpty()&&d.rev!==S.rev){var m=sbMerge(S,d);m.rev=Date.now();sbApply(m);flush();sbSay('Datos unidos y guardados en tu cuenta')}
+      else if((d.rev||0)>(S.rev||0)){sbApply(d);setSync('Sincronizado');sbSay('Sincronizado con tu cuenta')}
+      else if((d.rev||0)<(S.rev||0)){flush()}
+      else setSync('Sincronizado');
+    }else{if(!isEmpty()||S.rev)flush();else setSync('Sincronizado')}
+    try{localStorage.setItem('bitacora-sb-linked',sbS.uid)}catch(e){}
+  }).catch(function(e){setSync('Sin conexión con tu cuenta; los datos siguen en este dispositivo');sbSay(e.message||'Sin conexión')});
+}
+function sbStart(){
+  dbDoc={set:function(o){return sbReq('/rest/v1/crm_state?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:sbS.uid,data:o,updated_at:new Date().toISOString()})}).then(function(){try{localStorage.setItem('bitacora-sb-linked',sbS.uid)}catch(e){}})}};
+  setSync('Conectando con tu cuenta…');
+  sbPull(true).then(function(){render()});
+  if(!sbStart.on){sbStart.on=1;
+    document.addEventListener('visibilitychange',function(){if(!document.hidden&&sbS)sbPull()});
+    window.addEventListener('online',function(){if(sbS)sbPull()});
+    setInterval(function(){if(sbS&&!document.hidden)sbPull()},60000);
+  }
+}
+function sbAuth(kind){
+  var em=($('#sb-email')||{}).value||'',pw=($('#sb-pass')||{}).value||'';
+  em=em.trim();if(!em||pw.length<6){sbSay('Escribe tu email y una contraseña de al menos 6 caracteres.');return}
+  sbSay(kind==='up'?'Creando cuenta…':'Entrando…');
+  var url=kind==='up'?'/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+location.pathname):'/auth/v1/token?grant_type=password';
+  return fetch(SB.url+url,{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json'},body:JSON.stringify({email:em,password:pw})}).then(function(r){
+    return r.json().then(function(j){
+      if(!r.ok){var m=j.msg||j.error_description||j.message||'Error';
+        if(/invalid login/i.test(m))m='Email o contraseña incorrectos, o aún no has confirmado el correo.';
+        else if(/already|registered/i.test(m))m='Ese email ya tiene cuenta. Pulsa "Entrar".';
+        else if(/rate limit|security purposes/i.test(m))m='Demasiados intentos. Espera un minuto y vuelve a probar.';
+        throw new Error(m)}
+      if(j.access_token){sbFromTokens(j.access_token,j.refresh_token);sbSay('');sbStart();render()}
+      else sbSay('Te hemos enviado un correo. Ábrelo y pulsa el enlace para confirmar; después vuelve aquí y pulsa "Entrar".');
+    })}).catch(function(e){sbSay(e.message||'No se pudo conectar')});
+}
+function sbCard(){
+  if(window.claude&&claude.use)return '';
+  var h='<div class="card"><h3>Cuenta y sincronización</h3>';
+  if(sbS){
+    h+='<p style="margin:0 0 10px;color:var(--ink2)">Conectado como <b>'+esc(sbS.email||'tu cuenta')+'</b>. Tus datos se guardan en tu cuenta y se sincronizan entre tus dispositivos.</p><div class="fa" style="margin-top:0"><button class="btn" data-act="sbsync" type="button">Sincronizar ahora</button><button class="btn" data-act="sbout" type="button">Salir</button></div>';
+  }else{
+    h+='<p style="margin:0 0 10px;color:var(--ink2)">Entra con tu email para ver los mismos datos en el móvil y en el ordenador. Si es la primera vez, pulsa "Crear cuenta" y confirma el correo.</p>'+
+      '<div class="fg"><label class="f" for="sb-email"><span>Email</span><input id="sb-email" type="email" autocomplete="email" inputmode="email"></label><label class="f" for="sb-pass"><span>Contraseña</span><input id="sb-pass" type="password" autocomplete="current-password" minlength="6"></label></div>'+
+      '<div class="fa"><button class="btn primary" data-act="sbin" type="button">Entrar</button><button class="btn" data-act="sbup" type="button">Crear cuenta</button></div>';
+  }
+  return h+'<p class="ts" id="sbmsg" role="status">'+esc(sbNote)+'</p></div>';
+}
 function initDb(){
-  if(!window.claude||!claude.use){setSync('Datos guardados solo en este dispositivo');return}
+  if(!window.claude||!claude.use){
+    if(sbS&&sbS.refresh_token){sbStart();return}
+    setSync('Datos guardados solo en este dispositivo');return}
   Promise.all([claude.use('user'),claude.use('db')]).then(function(r){
     var user=r[0],db=r[1];
     if(!user||!db){setSync('Datos guardados solo en este dispositivo');return}
@@ -1231,6 +1319,7 @@ VIEWS.cuerpo=function(){
   '<div class="card"><h3>Agua · 14 días</h3>'+cols(wc,{goal:S.set.water,goalLabel:num(S.set.water)+' ml',aria:'Agua de los últimos 14 días'})+'</div></div>'+
   '<div class="grid">'+perfil+metas+'</div>'+gl+
   '<div class="card"><h3>Todo lo registrado</h3><div id="list">'+LISTS.cuerpo()+'</div></div>'+
+  sbCard()+
   '<div class="card"><h3>Datos</h3><p style="margin:0 0 10px;color:var(--ink2)">'+S.gastos.length+' gastos · '+S.gym.length+' ejercicios · '+S.comida.length+' comidas · '+S.cuerpo.length+' registros personales · '+S.plans.length+' planes</p><div class="fa" style="margin-top:0"><button class="btn" data-act="copy">Copiar copia de seguridad</button><button class="btn danger" data-act="reset">'+(ui.reset?'Confirmar: borrar todo':'Borrar todos los datos')+'</button>'+(ui.reset?'<button class="btn" data-act="reset-no">Cancelar</button>':'')+'</div>'+(ui.backup?'<p class="ts">Selecciona y copia este texto:</p><textarea readonly id="bk">'+esc(ui.backup)+'</textarea>':'')+'<h3 style="margin-top:16px">Importar copia de seguridad</h3><p class="ts" style="margin:0 0 8px">Pega aquí el texto copiado de otra versión de tu panel. Sustituye los datos actuales.</p><textarea id="imp" aria-label="Copia de seguridad a importar" placeholder="Pega aquí la copia"></textarea><div class="fa"><button class="btn primary" data-act="import">Importar</button></div>'+(ui.impmsg?'<p class="ts">'+esc(ui.impmsg)+'</p>':'')+'</div>';
 };
 LISTS.cuerpo=function(){
@@ -1381,6 +1470,10 @@ document.addEventListener('click',function(e){
   else if(a==='month'){var m=ui.month||today().slice(0,7),d=new Date(+m.slice(0,4),+m.slice(5)-1+Number(b.dataset.d),1);ui.month=d.getFullYear()+'-'+pad(d.getMonth()+1);ui.del='';render()}
   else if(a==='day'){var n=Number(b.dataset.d);ui.day=n?addDays(ui.day||today(),n):'';ui.del='';render()}
   else if(a==='cat'){ui.cat=b.dataset.v;$('#chips').innerHTML=chips();refreshList()}
+  else if(a==='sbin'){sbAuth('in')}
+  else if(a==='sbup'){sbAuth('up')}
+  else if(a==='sbout'){sbStore(null);dbDoc=null;try{localStorage.removeItem('bitacora-sb-linked')}catch(e){}sbNote='';setSync('Datos guardados solo en este dispositivo');render()}
+  else if(a==='sbsync'){sbSay('Sincronizando…');sbPull().then(function(){flush();sbSay('Sincronizado')})}
   else if(a==='clear-example'){S.example=false;S.gastos=[];S.ingresos=[];S.gym=[];S.comida=[];S.cuerpo=[];S.plans=[];S.gymdays=[];commit()}
   else if(a==='import'){
     var ta=$('#imp'),txt=ta?ta.value.trim():'';
