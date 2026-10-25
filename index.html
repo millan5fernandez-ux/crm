@@ -550,7 +550,12 @@ select option{background:var(--card);color:var(--ink)}
 .gdv .gl,.ch,.gs-h,.xl,.wd{font-family:var(--font-mono);letter-spacing:.08em}
 .chk[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--page);box-shadow:none}
 #tip{background:var(--ink);color:var(--page);border:0;border-radius:2px;font:600 11px var(--font-mono);backdrop-filter:none;-webkit-backdrop-filter:none}
-.theme-btn{display:inline-flex;align-items:center;gap:6px}
+.theme-btn{display:inline-flex;align-items:center;gap:10px}
+.sw{position:relative;width:34px;height:18px;border:1px solid var(--edge);border-radius:999px;background:var(--soft);flex:none;transition:background .2s}
+.sw i{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--ink);transition:transform .22s cubic-bezier(.2,.8,.2,1),background .2s}
+.theme-btn[aria-checked="true"] .sw{background:var(--accent)}
+.theme-btn[aria-checked="true"] .sw i{transform:translateX(16px);background:#0b0b0b}
+.theme-btn:hover .sw i{background:var(--page)}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--line);border:2px solid var(--page)}::-webkit-scrollbar-track{background:transparent}
 /* tablet */
 @media (max-width:1199px){
@@ -596,7 +601,7 @@ select option{background:var(--card);color:var(--ink)}
   <div id="dash">
     <div class="dtop">
       <span class="crumb">// Hoy · <b id="hdate2"></b></span>
-      <div class="dact"><button class="btn theme-btn" id="themebtn" type="button" aria-label="Cambiar entre tema claro y oscuro">◐ Tema</button><button class="btn primary" data-go="gastos" type="button">＋ Nuevo gasto</button></div>
+      <div class="dact"><button class="btn theme-btn" id="themebtn" type="button" role="switch" aria-checked="false" aria-label="Modo oscuro"><span class="sw" aria-hidden="true"><i></i></span><span id="themelbl">Modo oscuro</span></button><button class="btn primary" data-go="gastos" type="button">＋ Nuevo gasto</button></div>
     </div>
     <h1 class="big">DASH<span>BOARD</span></h1>
     <p class="sub">Tu semana de un vistazo: gastos, gym, comida y días. Pulsa una tarjeta o una zona del escritorio para abrirla.</p>
@@ -1289,8 +1294,11 @@ function render(){
   renderHud();
   document.querySelectorAll('.tab').forEach(function(a){if(a.dataset.tab===ui.tab){a.setAttribute('aria-current','page');try{var nv=a.parentNode;if(nv.scrollWidth>nv.clientWidth)nv.scrollTo({left:a.offsetLeft-nv.clientWidth/2+a.offsetWidth/2,behavior:'auto'})}catch(e){}}else a.removeAttribute('aria-current')});
   $('#hdate').textContent=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});var h2=$('#hdate2');if(h2)h2.textContent=$('#hdate').textContent;
-  try{var th=localStorage.getItem('bitacora-theme');if(th==='dark'||th==='light')document.documentElement.dataset.theme=th}catch(e){}
-  var tb=$('#themebtn');if(tb)tb.addEventListener('click',function(){var n=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=n;try{localStorage.setItem('bitacora-theme',n)}catch(e){}});
+  function setTheme(n,save){document.documentElement.dataset.theme=n;var b=$('#themebtn');if(b){b.setAttribute('aria-checked',n==='dark'?'true':'false');var l=$('#themelbl');if(l)l.textContent=n==='dark'?'Modo claro':'Modo oscuro'}if(save){try{localStorage.setItem('bitacora-theme',n)}catch(e){}}}
+  var th0='';try{th0=localStorage.getItem('bitacora-theme')||''}catch(e){}
+  if(th0!=='dark'&&th0!=='light'){th0=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}
+  setTheme(th0,false);
+  var tb=$('#themebtn');if(tb)tb.addEventListener('click',function(){setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark',true)});
   drawLines();
   var vw=$('#view');
   vw.classList.remove('anim');
