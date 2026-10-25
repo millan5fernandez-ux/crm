@@ -1036,7 +1036,9 @@ function builderHtml(){
       h+='<div id="gprev" style="margin-top:12px">'+previewHtml()+'</div>';
     }
     if(s.went)h+='<label class="f full" style="margin-top:12px" for="gnote"><span>Nota (opcional)</span><input id="gnote" type="text" maxlength="140" placeholder="Cómo fue la sesión" value="'+esc(s.note)+'"></label>';
-    h+='<div class="fa"><button class="btn primary" type="submit">'+(s.went?'Guardar sesión':'Guardar descanso')+'</button>';
+    var hasRec=S.gym.some(function(g){return g.date===s.date});
+    h+='<div class="fa">';
+    if(s.went||hasRec)h+='<button class="btn primary" type="submit">'+(s.went?'Guardar sesión':'Guardar descanso (borra los ejercicios de ese día)')+'</button>';
     if(s.exists)h+='<button class="btn'+(ui.del==='gday'?' danger':'')+'" type="button" data-act="gdelday">'+(ui.del==='gday'?'Confirmar: borrar este día':'Borrar este día')+'</button>';
     if(ui.gmsg)h+='<span class="pill good" role="status">✓ '+esc(ui.gmsg)+'</span>';
     h+='</div>';
@@ -1397,7 +1399,7 @@ document.addEventListener('click',function(e){
   else if(a==='gtoday'){ui.sess=loadDay(today());ui.gmsg='';ui.del='';render()}
   else if(a==='gseld'){ui.sess=loadDay(b.dataset.d);ui.gmsg='';ui.del='';render()}
   else if(a==='gload'){ui.sess=loadDay(b.dataset.d);ui.gmsg='';ui.del='';render();var gf=$('#gform');if(gf)gf.scrollIntoView({block:'start'})}
-  else if(a==='gwent'){ui.sess.went=b.dataset.v==='1';ui.gmsg='';ui.del='';render()}
+  else if(a==='gwent'){ui.sess.went=b.dataset.v==='1';ui.gmsg='';ui.del='';if(!ui.sess.went&&!S.gym.some(function(g){return g.date===ui.sess.date})){ui.sess.note='';ui.sess.tags=[];HANDLERS.gymday()}else render()}
   else if(a==='goalsreset'){delete S.set.goals;commit()}
   else if(a==='gtag'){toggleTag(b.dataset.v);ui.gmsg='';render()}
   else if(a==='gpick'){var ip=ui.sess.items.filter(function(i){return i.k===b.dataset.k})[0];if(ip){ip.custom=false;if(exOptions(ip.muscle).indexOf(ip.exercise)<0)ip.exercise='';ip.t=1;render()}}
