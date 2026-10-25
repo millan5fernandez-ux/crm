@@ -715,12 +715,23 @@ var lines={};
 /* ---------- persistencia ---------- */
 var dbDoc=null,saving=false,dirty=false,timer=0;
 function setSync(t){var el=$('#sync');if(el)el.textContent=t}
-function commit(){S.rev=Date.now();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}clearTimeout(timer);dirty=true;timer=setTimeout(flush,700);render()}
+var lastAuto='';
+function commit(){var td=today();if(lastAuto!==td){lastAuto=td;snap('automática')}S.rev=Date.now();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}clearTimeout(timer);dirty=true;timer=setTimeout(flush,700);render()}
 function flush(){
   if(!dbDoc)return;
   if(saving){dirty=true;return}
   saving=true;dirty=false;
   dbDoc.set(JSON.parse(JSON.stringify(S))).then(function(){setSync('Guardado en tu cuenta')},function(){setSync('No se pudo guardar en tu cuenta; los datos siguen en este dispositivo')}).then(function(){saving=false;if(dirty)flush()});
+}
+var SNAPK='bitacora-snaps';
+function cnt(d){return SYNC_LISTS.reduce(function(a,k){return a+((d&&d[k])?d[k].length:0)},0)}
+function snaps(){try{return JSON.parse(localStorage.getItem(SNAPK)||'[]')}catch(e){return[]}}
+function snap(why){
+  try{if(cnt(S)===0)return;var a=snaps(),last=a[0];
+    if(last&&last.n===cnt(S)&&last.why===why)return;
+    a.unshift({t:Date.now(),why:why,n:cnt(S),data:JSON.parse(JSON.stringify(S))});
+    while(a.length>6)a.pop();
+    localStorage.setItem(SNAPK,JSON.stringify(a))}catch(e){try{var a2=snaps().slice(0,2);localStorage.setItem(SNAPK,JSON.stringify(a2))}catch(x){}}
 }
 var SYNC_LISTS=['gastos','ingresos','gym','comida','cuerpo','plans','gymdays'];
 function sbSay(t){sbNote=t;var e=$('#sbmsg');if(e)e.textContent=t}
@@ -744,13 +755,15 @@ function sbMerge(a,b){
   });
   out.example=false;return out;
 }
-function sbApply(d){adopt(d);try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}render()}
+function sbApply(d){snap('antes de sincronizar');adopt(d);try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}render()}
 function sbPull(first){
   if(!sbS||saving||dirty)return Promise.resolve();
   return sbReq('/rest/v1/crm_state?select=data,updated_at&user_id=eq.'+sbS.uid).then(function(rows){
     var d=rows&&rows[0]&&rows[0].data,linked='';try{linked=localStorage.getItem('bitacora-sb-linked')||''}catch(e){}
     if(d&&d.v===1){
-      if(first&&linked!==sbS.uid&&!isEmpty()&&d.rev!==S.rev){var m=sbMerge(S,d);m.rev=Date.now();sbApply(m);flush();sbSay('Datos unidos y guardados en tu cuenta')}
+      if(cnt(S)===0&&cnt(d)>0){sbApply(d);setSync('Sincronizado');sbSay('Datos recuperados de tu cuenta')}
+      else if(cnt(d)===0&&cnt(S)>0){S.rev=Date.now();try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}flush();setSync('Sincronizado')}
+      else if(first&&linked!==sbS.uid&&!isEmpty()&&d.rev!==S.rev){var m=sbMerge(S,d);m.rev=Date.now();sbApply(m);flush();sbSay('Datos unidos y guardados en tu cuenta')}
       else if((d.rev||0)>(S.rev||0)){sbApply(d);setSync('Sincronizado');sbSay('Sincronizado con tu cuenta')}
       else if((d.rev||0)<(S.rev||0)){flush()}
       else setSync('Sincronizado');
@@ -783,6 +796,11 @@ function sbAuth(kind){
       if(j.access_token){sbFromTokens(j.access_token,j.refresh_token);sbSay('');sbStart();render()}
       else sbSay('Te hemos enviado un correo. Ábrelo y pulsa el enlace para confirmar; después vuelve aquí y pulsa "Entrar".');
     })}).catch(function(e){sbSay(e.message||'No se pudo conectar')});
+}
+function snapCard(){
+  var a=snaps();if(!a.length)return '';
+  return '<div class="card"><h3>Copias automáticas</h3><p style="margin:0 0 10px;color:var(--ink2)">Este dispositivo guarda copias antes de borrar, importar o sincronizar. Si algo desaparece, restaura la última.</p><ul class="rows">'+a.map(function(x,i){
+    var d=new Date(x.t);return '<li class="row"><span class="rd">'+d.toLocaleDateString('es-ES',{day:'numeric',month:'short'})+'</span><span><span class="rt">'+x.n+' registros</span><span class="rs"><span>'+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})+' · '+esc(x.why)+'</span></span></span><span class="rv"><button class="btn" type="button" data-act="snaprest" data-i="'+i+'">Restaurar</button></span></li>'}).join('')+'</ul></div>';
 }
 function sbCard(){
   if(window.claude&&claude.use)return '';
@@ -1333,7 +1351,7 @@ VIEWS.cuerpo=function(){
   '<div class="card"><h3>Agua · 14 días</h3>'+cols(wc,{goal:S.set.water,goalLabel:num(S.set.water)+' ml',aria:'Agua de los últimos 14 días'})+'</div></div>'+
   '<div class="grid">'+perfil+metas+'</div>'+gl+
   '<div class="card"><h3>Todo lo registrado</h3><div id="list">'+LISTS.cuerpo()+'</div></div>'+
-  sbCard()+
+  snapCard()+sbCard()+
   '<div class="card"><h3>Datos</h3><p style="margin:0 0 10px;color:var(--ink2)">'+S.gastos.length+' gastos · '+S.gym.length+' ejercicios · '+S.comida.length+' comidas · '+S.cuerpo.length+' registros personales · '+S.plans.length+' planes</p><div class="fa" style="margin-top:0"><button class="btn" data-act="copy">Copiar copia de seguridad</button><button class="btn danger" data-act="reset">'+(ui.reset?'Confirmar: borrar todo':'Borrar todos los datos')+'</button>'+(ui.reset?'<button class="btn" data-act="reset-no">Cancelar</button>':'')+'</div>'+(ui.backup?'<p class="ts">Selecciona y copia este texto:</p><textarea readonly id="bk">'+esc(ui.backup)+'</textarea>':'')+'<h3 style="margin-top:16px">Importar copia de seguridad</h3><p class="ts" style="margin:0 0 8px">Pega aquí el texto copiado de otra versión de tu panel. Sustituye los datos actuales.</p><textarea id="imp" aria-label="Copia de seguridad a importar" placeholder="Pega aquí la copia"></textarea><div class="fa"><button class="btn primary" data-act="import">Importar</button></div>'+(ui.impmsg?'<p class="ts">'+esc(ui.impmsg)+'</p>':'')+'</div>';
 };
 LISTS.cuerpo=function(){
@@ -1484,17 +1502,18 @@ document.addEventListener('click',function(e){
   else if(a==='month'){var m=ui.month||today().slice(0,7),d=new Date(+m.slice(0,4),+m.slice(5)-1+Number(b.dataset.d),1);ui.month=d.getFullYear()+'-'+pad(d.getMonth()+1);ui.del='';render()}
   else if(a==='day'){var n=Number(b.dataset.d);ui.day=n?addDays(ui.day||today(),n):'';ui.del='';render()}
   else if(a==='cat'){ui.cat=b.dataset.v;$('#chips').innerHTML=chips();refreshList()}
+  else if(a==='snaprest'){var sn=snaps()[+b.dataset.i];if(sn&&sn.data){snap('antes de restaurar');adopt(sn.data);ui.impmsg='';commit()}}
   else if(a==='sbin'){sbAuth('in')}
   else if(a==='sbup'){sbAuth('up')}
   else if(a==='sbout'){sbStore(null);dbDoc=null;try{localStorage.removeItem('bitacora-sb-linked')}catch(e){}sbNote='';setSync('Datos guardados solo en este dispositivo');render()}
   else if(a==='sbsync'){sbSay('Sincronizando…');sbPull().then(function(){flush();sbSay('Sincronizado')})}
-  else if(a==='clear-example'){S.example=false;S.gastos=[];S.ingresos=[];S.gym=[];S.comida=[];S.cuerpo=[];S.plans=[];S.gymdays=[];commit()}
+  else if(a==='clear-example'){snap('antes de borrar ejemplos');S.example=false;S.gastos=[];S.ingresos=[];S.gym=[];S.comida=[];S.cuerpo=[];S.plans=[];S.gymdays=[];commit()}
   else if(a==='import'){
     var ta=$('#imp'),txt=ta?ta.value.trim():'';
     try{
       var o=JSON.parse(txt);
       if(!o||o.v!==1||!Array.isArray(o.gym)||!Array.isArray(o.gastos))throw new Error('formato');
-      o.example=false;adopt(o);ui.impmsg='Importado: '+S.gym.length+' ejercicios, '+S.gymdays.length+' días de gym, '+S.comida.length+' comidas, '+S.gastos.length+' gastos.';commit();
+      snap('antes de importar');o.example=false;adopt(o);ui.impmsg='Importado: '+S.gym.length+' ejercicios, '+S.gymdays.length+' días de gym, '+S.comida.length+' comidas, '+S.gastos.length+' gastos.';commit();
     }catch(err){ui.impmsg='No se pudo importar: el texto no es una copia válida.';render()}
   }
   else if(a==='copy'){
@@ -1502,7 +1521,7 @@ document.addEventListener('click',function(e){
     var show=function(){ui.backup=txt;render();var ta=$('#bk');if(ta){ta.focus();ta.select()}};
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){b.textContent='Copiado'},show);else show();
   }
-  else if(a==='reset'){if(ui.reset){var set=S.set,prof=S.profile;S=EMPTY();S.set=set;S.profile=prof;ui.reset=false;commit()}else{ui.reset=true;render()}}
+  else if(a==='reset'){if(ui.reset){snap('antes de borrar todo');var set=S.set,prof=S.profile;S=EMPTY();S.set=set;S.profile=prof;ui.reset=false;commit()}else{ui.reset=true;render()}}
   else if(a==='reset-no'){ui.reset=false;render()}
   else if(a==='seldate'){ui.sel=b.dataset.d;ui.cal=ui.sel.slice(0,7);ui.del='';ui.edit=null;render()}
   else if(a==='calmonth'){var cm=ui.cal||today().slice(0,7),cd=new Date(+cm.slice(0,4),+cm.slice(5)-1+Number(b.dataset.d),1);ui.cal=cd.getFullYear()+'-'+pad(cd.getMonth()+1);ui.del='';render()}
