@@ -618,6 +618,15 @@ select option{background:var(--card);color:var(--ink)}
 #clock .ckt small{font-size:.4em;color:var(--muted);margin-left:6px;letter-spacing:0}
 #clock .ckd{font:600 10.5px var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px}
 @media (max-width:860px){#clock{display:none}}
+
+#acct{margin:0 0 12px}
+#acct h3{margin:0 0 10px}
+#acct .acrow{display:flex;flex-wrap:wrap;gap:10px 12px;align-items:flex-end}
+#acct .f{flex:1 1 200px;min-width:0}
+#acct .acinfo{margin:0;flex:1 1 220px;color:var(--ink2)}
+#acct .acbtns{display:flex;gap:8px;flex-wrap:wrap}
+#acct .ts{margin:8px 0 0}#acct .ts:empty{display:none}
+@media (max-width:860px){#acct .acbtns{width:100%}#acct .acbtns .btn{flex:1}}
 </style>
 <div id="app">
   <header id="top">
@@ -635,6 +644,7 @@ select option{background:var(--card);color:var(--ink)}
     <div class="hero"><h1 class="big">DASH<span>BOARD</span></h1><div id="clock" aria-live="off"><div class="ckg" id="cgreet"></div><div class="ckt"><span id="chm"></span><small id="cs"></small></div><div class="ckd" id="cdate"></div></div></div>
     <p class="sub">Tu semana de un vistazo: gastos, gym, comida y días. Pulsa una tarjeta o una zona del escritorio para abrirla.</p>
     <div id="kpis"></div>
+    <section class="dcard" id="acct" aria-label="Cuenta y sincronización"></section>
     <div id="dgrid">
       <main id="stage" class="dcard">
     <canvas id="c" role="img" aria-label="Escritorio en 3D con zonas para gastos, gym, comida, personal y calendario"></canvas>
@@ -743,7 +753,7 @@ function snap(why){
     localStorage.setItem(SNAPK,JSON.stringify(a))}catch(e){try{var a2=snaps().slice(0,2);localStorage.setItem(SNAPK,JSON.stringify(a2))}catch(x){}}
 }
 var SYNC_LISTS=['gastos','ingresos','gym','comida','cuerpo','plans','gymdays'];
-function sbSay(t){sbNote=t;var e=$('#sbmsg');if(e)e.textContent=t}
+function sbSay(t){sbNote=t;var e=$('#sbmsg');if(e)e.textContent=t;var a=$('#acmsg');if(a)a.textContent=t}
 function sbReq(path,o,retry){
   o=o||{};var h=Object.assign({apikey:SB.key,'Content-Type':'application/json'},o.headers||{});
   h.Authorization='Bearer '+((sbS&&sbS.access_token)||SB.key);
@@ -791,7 +801,7 @@ function sbStart(){
   }
 }
 function sbAuth(kind){
-  var em=($('#sb-email')||{}).value||'',pw=($('#sb-pass')||{}).value||'';
+  var em=($('#ac-email')||{}).value||($('#sb-email')||{}).value||'',pw=($('#ac-pass')||{}).value||($('#sb-pass')||{}).value||'';
   em=em.trim();if(!em||pw.length<6){sbSay('Escribe tu email y una contraseña de al menos 6 caracteres.');return}
   sbSay(kind==='up'?'Creando cuenta…':'Entrando…');
   var url=kind==='up'?'/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+location.pathname):'/auth/v1/token?grant_type=password';
@@ -830,6 +840,7 @@ e.textContent=p(h)+':'+p(d.getMinutes());document.getElementById('cs').textConte
 document.getElementById('cgreet').textContent='// '+(h<6?'Buenas noches':h<14?'Buenos días':h<21?'Buenas tardes':'Buenas noches')+(S&&S.profile&&S.profile.name?', '+S.profile.name:'');
 document.getElementById('cdate').textContent=D[d.getDay()]+' '+d.getDate()+' '+M[d.getMonth()]}
 tick();setInterval(function(){if(!document.hidden)tick()},1000)})();
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target&&e.target.closest&&e.target.closest('#acct')){e.preventDefault();sbAuth('in')}});
 function initDb(){
   if(!window.claude||!claude.use){
     if(sbS&&sbS.refresh_token){sbStart();return}
@@ -1687,7 +1698,22 @@ function feedItems(n){
     S.gym.map(function(g){return {date:g.date,id:g.id,k:'Gym',t:g.exercise,v:gdesc(g)}})
   ).sort(cmpDesc).slice(0,n);
 }
+var acKey='';
+function acctRender(){
+  var el=$('#acct');if(!el)return;
+  if(window.claude&&claude.use){el.style.display='none';return}
+  var key=sbS?'in:'+(sbS.email||''):'out';
+  if(key===acKey)return;acKey=key;
+  var h='<h3>Cuenta y sincronización</h3>';
+  if(sbS){
+    h+='<div class="acrow"><p class="acinfo">Conectado como <b>'+esc(sbS.email||'tu cuenta')+'</b></p><div class="acbtns"><button class="btn primary" data-act="sbsync" type="button">Sincronizar ahora</button><button class="btn" data-act="sbout" type="button">Salir</button></div></div>';
+  }else{
+    h+='<div class="acrow"><label class="f" for="ac-email"><span>Email</span><input id="ac-email" type="email" autocomplete="email" inputmode="email"></label><label class="f" for="ac-pass"><span>Contraseña</span><input id="ac-pass" type="password" autocomplete="current-password" minlength="6"></label><div class="acbtns"><button class="btn primary" data-act="sbin" type="button">Entrar</button><button class="btn" data-act="sbup" type="button">Crear cuenta</button></div></div>';
+  }
+  el.innerHTML=h+'<p class="ts" id="acmsg" role="status">'+esc(sbNote)+'</p>';
+}
 function renderHud(){
+  acctRender();
   var k=kpis(),t=today(),ym=t.slice(0,7);
   var kcSub=k.kc===0?'Sin registrar':(k.kc>S.set.kcal*1.05?pill('warn','Por encima'):pill('good','En objetivo'));
   var np=nextPlan();
