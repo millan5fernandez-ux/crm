@@ -671,6 +671,14 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
   body.drawer-open #week{grid-column:span 7}
   body.drawer-open #quickc{grid-column:span 5}
 }
+
+/* iPhone: el contenido no se desplaza por debajo de la barra de estado (evita el degradado/desenfoque del sistema) */
+@media (max-width:860px){
+  html,body{height:100%;overflow:hidden}
+  body::before{display:block!important;content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--page);z-index:60}
+  #app{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;bottom:0;height:auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+  #top{padding-top:10px}
+}
 </style>
 <div id="app">
   <header id="top">
