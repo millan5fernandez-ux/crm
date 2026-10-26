@@ -609,6 +609,15 @@ select option{background:var(--card);color:var(--ink)}
   #dash{padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
 }
 @media (prefers-reduced-motion:reduce){body.drawer-open #drawer{animation:none}*{transition-duration:.01ms!important}}
+
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.hero .big{margin-right:auto}
+#clock{border:1.5px solid var(--edge);background:var(--card);padding:12px 18px 10px;margin-bottom:8px;min-width:230px;text-align:right}
+#clock .ckg{font:600 10.5px var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+#clock .ckt{font:700 clamp(40px,4.6vw,64px)/1 var(--font-mono);letter-spacing:-.04em;color:var(--ink);font-variant-numeric:tabular-nums}
+#clock .ckt small{font-size:.4em;color:var(--muted);margin-left:6px;letter-spacing:0}
+#clock .ckd{font:600 10.5px var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+@media (max-width:860px){#clock{display:none}}
 </style>
 <div id="app">
   <header id="top">
@@ -623,7 +632,7 @@ select option{background:var(--card);color:var(--ink)}
       <span class="crumb">// Hoy · <b id="hdate2"></b></span>
       <div class="dact"><button class="btn theme-btn" id="themebtn" type="button" role="switch" aria-checked="false" aria-label="Modo oscuro"><span class="sw" aria-hidden="true"><i></i></span><span id="themelbl">Modo oscuro</span></button><button class="btn primary" data-go="gastos" type="button">＋ Nuevo gasto</button></div>
     </div>
-    <h1 class="big">DASH<span>BOARD</span></h1>
+    <div class="hero"><h1 class="big">DASH<span>BOARD</span></h1><div id="clock" aria-live="off"><div class="ckg" id="cgreet"></div><div class="ckt"><span id="chm"></span><small id="cs"></small></div><div class="ckd" id="cdate"></div></div></div>
     <p class="sub">Tu semana de un vistazo: gastos, gym, comida y días. Pulsa una tarjeta o una zona del escritorio para abrirla.</p>
     <div id="kpis"></div>
     <div id="dgrid">
@@ -814,6 +823,13 @@ function sbCard(){
   }
   return h+'<p class="ts" id="sbmsg" role="status">'+esc(sbNote)+'</p></div>';
 }
+(function(){var D=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],M=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function p(n){return(n<10?'0':'')+n}
+function tick(){var d=new Date(),h=d.getHours(),e=document.getElementById('chm');if(!e)return;
+e.textContent=p(h)+':'+p(d.getMinutes());document.getElementById('cs').textContent=p(d.getSeconds());
+document.getElementById('cgreet').textContent='// '+(h<6?'Buenas noches':h<14?'Buenos días':h<21?'Buenas tardes':'Buenas noches')+(S&&S.profile&&S.profile.name?', '+S.profile.name:'');
+document.getElementById('cdate').textContent=D[d.getDay()]+' '+d.getDate()+' '+M[d.getMonth()]}
+tick();setInterval(function(){if(!document.hidden)tick()},1000)})();
 function initDb(){
   if(!window.claude||!claude.use){
     if(sbS&&sbS.refresh_token){sbStart();return}
