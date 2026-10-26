@@ -654,8 +654,23 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
 .theme-btn:hover .sw i{animation:bob 1.02s ease infinite}
 @media (prefers-reduced-motion:reduce){body.intro *,#clock .ckt i,.big span,.theme-btn:hover .sw i{animation:none!important}#kpis>*:hover,#dgrid>.dcard:hover{transform:none}}
 
-/* El panel de módulos empieza bajo la barra superior para no tapar el botón de tema */
-@media (min-width:861px){#drawer{top:86px;border-top:2px solid var(--edge)}}
+/* Pantalla dividida: al abrir un módulo, mitad panel / mitad dashboard */
+@media (min-width:861px){
+  body.drawer-open #app{grid-template-columns:var(--navw) minmax(0,1fr) minmax(0,1fr);grid-template-areas:"top dash drawer" "nav dash drawer"}
+  body.drawer-open #drawer{position:static;grid-area:drawer;top:auto;right:auto;bottom:auto;width:auto;height:auto;min-height:0;z-index:1;box-shadow:none;border-left:2px solid var(--edge);border-top:0}
+  body.drawer-open #dash{padding:16px 16px 32px}
+  body.drawer-open #clock{display:none}
+  body.drawer-open .big{font-size:clamp(34px,5vw,64px);margin:10px 0 6px}
+  body.drawer-open .sub{display:none}
+  body.drawer-open #kpis{grid-template-columns:1fr 1fr}
+  body.drawer-open #kpis .kpi{margin:-1px 0 0 -1px}
+  body.drawer-open #kpis .kpi:nth-child(odd){margin-left:0}
+  body.drawer-open #dgrid #stage{grid-column:1/-1;min-height:360px}
+  body.drawer-open #chart,body.drawer-open #upnext{grid-column:span 6}
+  body.drawer-open #feed{grid-column:1/-1}
+  body.drawer-open #week{grid-column:span 7}
+  body.drawer-open #quickc{grid-column:span 5}
+}
 </style>
 <div id="app">
   <header id="top">
