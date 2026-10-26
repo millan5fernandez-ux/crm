@@ -1854,23 +1854,41 @@ function initScene(){
   R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;
   var scene=new T.Scene();
   var cam=new T.OrthographicCamera(-10,10,10,-10,-300,300);
-  var amb=new T.AmbientLight(0xffffff,.62),sun=new T.DirectionalLight(0xffffff,.62);
+  var amb=new T.AmbientLight(0xffffff,.5),sun=new T.DirectionalLight(0xffffff,.62);
   sun.position.set(10,18,8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
   var sh=sun.shadow.camera;sh.left=-22;sh.right=22;sh.top=22;sh.bottom=-22;sh.near=1;sh.far=70;sun.shadow.bias=-.0006;
+  var hemi=new T.HemisphereLight(0xffffff,0x9aa3b5,.28);scene.add(hemi);sun.shadow.radius=3;
   scene.add(amb);scene.add(sun);
 
   var M=function(c,o){return new T.MeshStandardMaterial(Object.assign({color:c,roughness:.8,metalness:.04},o||{}))};
-  var Bx=function(w,h,d){return new T.BoxGeometry(w,h,d)};
+  function rrPath(sh,w,h,r){var x=w/2,y=h/2;r=Math.max(0,Math.min(r,x*.999,y*.999));
+    sh.moveTo(-x+r,-y);sh.lineTo(x-r,-y);sh.quadraticCurveTo(x,-y,x,-y+r);sh.lineTo(x,y-r);sh.quadraticCurveTo(x,y,x-r,y);sh.lineTo(-x+r,y);sh.quadraticCurveTo(-x,y,-x,y-r);sh.lineTo(-x,-y+r);sh.quadraticCurveTo(-x,-y,-x+r,-y);return sh}
+  /* caja de bordes redondeados (en lugar de un cubo duro) */
+  var Bx=function(w,h,d){
+    var b=Math.min(.12,.3*Math.min(w,h,d));
+    var sh=rrPath(new T.Shape(),w-2*b,h-2*b,b*.9);
+    var g=new T.ExtrudeGeometry(sh,{depth:Math.max(.0001,d-2*b),bevelEnabled:true,bevelThickness:b,bevelSize:b,bevelSegments:3,curveSegments:5});
+    g.translate(0,0,-(d-2*b)/2);return g};
+  /* losa con esquinas redondeadas en planta (suelo y baldosas) */
+  var Slab=function(w,d,h,rad){
+    var bv=Math.min(.08,h*.2);
+    var sh=rrPath(new T.Shape(),w-2*bv,d-2*bv,Math.max(0,rad-bv));
+    var g=new T.ExtrudeGeometry(sh,{depth:Math.max(.0001,h-2*bv),bevelEnabled:true,bevelThickness:bv,bevelSize:bv,bevelSegments:2,curveSegments:10});
+    g.rotateX(-Math.PI/2);g.translate(0,-(h-2*bv)/2,0);return g};
+  function outlineSegs(w,d,rad,y0,y1){
+    var sh=rrPath(new T.Shape(),w,d,rad),pts=sh.getPoints(8),v=[];
+    [y0,y1].forEach(function(y){for(var i=0;i<pts.length;i++){var a=pts[i],b=pts[(i+1)%pts.length];v.push(a.x,y,-a.y,b.x,y,-b.y)}});
+    var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(v,3));return g}
   var Cy=function(a,b,h,s){return new T.CylinderGeometry(a,b,h,s||28)};
   var Sp=function(r){return new T.SphereGeometry(r,24,18)};
   function add(p,g,c,x,y,z,o){var m=new T.Mesh(g,M(c,o));m.position.set(x||0,y||0,z||0);m.castShadow=true;m.receiveShadow=true;p.add(m);return m}
 
   /* suelo */
   var floorMat=M('#10153a',{roughness:.9});
-  var floor=new T.Mesh(Bx(27,.7,21),floorMat);floor.position.y=-.35;floor.receiveShadow=true;scene.add(floor);
-  var base=new T.Mesh(Bx(26,.6,20),M('#070920',{roughness:1}));base.position.y=-1;scene.add(base);
-  var neon=new T.LineSegments(new T.EdgesGeometry(Bx(27,.7,21)),new T.LineBasicMaterial({color:0xff3b3b,transparent:true,opacity:1}));neon.position.y=-.35;scene.add(neon);
-  var neon2=new T.LineSegments(new T.EdgesGeometry(Bx(26,.6,20)),new T.LineBasicMaterial({color:0x0b0b0b,transparent:true,opacity:.9}));neon2.position.y=-1;scene.add(neon2);
+  var floor=new T.Mesh(Slab(27,21,.7,2.6),floorMat);floor.position.y=-.35;floor.receiveShadow=true;scene.add(floor);
+  var base=new T.Mesh(Slab(26,20,.6,2.4),M('#070920',{roughness:1}));base.position.y=-1;scene.add(base);
+  var neon=new T.LineSegments(outlineSegs(27,21,2.6,.35,-.35),new T.LineBasicMaterial({color:0xff3b3b,transparent:true,opacity:1}));neon.position.y=-.35;scene.add(neon);
+  var neon2=new T.LineSegments(outlineSegs(26,20,2.4,.3,-.3),new T.LineBasicMaterial({color:0x0b0b0b,transparent:true,opacity:.9}));neon2.position.y=-1;scene.add(neon2);
 
   function theme(){
     var cs=getComputedStyle(document.documentElement);
@@ -1886,7 +1904,7 @@ function initScene(){
   var zones={};
   function zone(tab,x,z,color,w,d,tagY,dz){
     var g=new T.Group();g.position.set(x,0,z);scene.add(g);
-    var tile=new T.Mesh(Bx(w,.08,d),new T.MeshStandardMaterial({color:color,transparent:true,opacity:.28,roughness:1}));
+    var tile=new T.Mesh(Slab(w,d,.08,Math.min(.9,Math.min(w,d)*.22)),new T.MeshStandardMaterial({color:color,transparent:true,opacity:.28,roughness:1}));
     tile.position.y=.04;tile.receiveShadow=true;g.add(tile);
     var o={tab:tab,group:g,tile:tile,color:color,h:0,hover:false,tagY:tagY,dz:dz||0};
     zones[tab]=o;g.userData.zone=o;return o;
@@ -2056,7 +2074,7 @@ function initScene(){
   var trees=[];
   [[-12,6.5],[-11.8,-8],[12,-7.8],[11.8,7.8],[-4.5,-9.2],[4.8,9.2],[-12.2,0.5],[12.2,0.2],[-3,9.3],[3.5,-9.3]].forEach(function(p,i){
     var t=new T.Group();t.position.set(p[0],0,p[1]);t.userData.p=i;scene.add(t);
-    add(t,Cy(.12,.17,.8,10),'#6b5442',0,.4,0);
+    add(t,Cy(.12,.17,.8,18),'#6b5442',0,.4,0);
     var cn=add(t,Sp(.75),i%2?'#5fb35f':'#4fa862',0,1.4,0);cn.scale.set(1,1.15,1);
     trees.push(t);
   });
@@ -2065,8 +2083,8 @@ function initScene(){
   var decoClouds=[],bflies=[],lampBulbs=[];
   (function(){
     /* camino de piedras */
-    for(var i=0;i<7;i++)add(scene,Cy(.5,.55,.08,14),i%2?'#d8d2c8':'#cfc8bc',-4.5+i*1.5,.04,5.4+(i%2?.12:-.12));
-    for(var j=0;j<5;j++)add(scene,Cy(.45,.5,.08,14),j%2?'#d8d2c8':'#cfc8bc',.1+(j%2?.15:-.15),.04,-6.2-j*0);
+    for(var i=0;i<7;i++)add(scene,Cy(.5,.55,.08,32),i%2?'#d8d2c8':'#cfc8bc',-4.5+i*1.5,.04,5.4+(i%2?.12:-.12));
+    for(var j=0;j<5;j++)add(scene,Cy(.45,.5,.08,32),j%2?'#d8d2c8':'#cfc8bc',.1+(j%2?.15:-.15),.04,-6.2-j*0);
     /* parterres de flores */
     var fc=['#ff5c8a','#ffd23f','#ff7a3d','#ffffff','#e5322d'];
     [[-2.2,7.5],[2.4,7.7],[-12.3,-4.8],[12.3,5.2],[9.6,-9.2],[-9.8,9.2]].forEach(function(b,bi){
@@ -2084,8 +2102,8 @@ function initScene(){
     /* farolas */
     [[-12.4,-3.2],[12.4,3.4],[-8.2,9.4],[8.4,-9.4]].forEach(function(p){
       var g=new T.Group();g.position.set(p[0],0,p[1]);scene.add(g);
-      add(g,Cy(.13,.18,.2,10),'#2b3340',0,.1,0);
-      add(g,Cy(.07,.09,2.6,10),'#2b3340',0,1.5,0);
+      add(g,Cy(.13,.18,.2,20),'#2b3340',0,.1,0);
+      add(g,Cy(.07,.09,2.6,18),'#2b3340',0,1.5,0);
       var bu=add(g,Sp(.28),'#ffe08a',0,2.95,0,{emissive:new T.Color('#ffd25a'),emissiveIntensity:.8,roughness:.4});bu.castShadow=false;lampBulbs.push(bu);
       add(g,Cy(.05,.34,.18,10),'#2b3340',0,3.28,0);
     });
