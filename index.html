@@ -651,7 +651,9 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
 #feed:hover,#week:hover,#chart:hover,#upnext:hover{transform:translateY(-2px);box-shadow:0 5px 0 var(--edge)}
 #quickc .qa{transition:transform 0.26s ease}#quickc .qa:hover{transform:translateX(5px)}
 .big span{background:linear-gradient(100deg,var(--accent) 42%,#ff8f8f 50%,var(--accent) 58%) 0 0/200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:sheen 8.5s linear infinite}
-.theme-btn:hover .sw i{animation:bob 1.02s ease infinite}
+.theme-btn:hover .sw i{width:16px;border-radius:9px}
+.theme-btn[aria-checked="true"]:hover .sw i{transform:translateX(12px)}
+.sw i{transition:transform .22s cubic-bezier(.2,.8,.2,1),width .2s,background .2s}
 @media (prefers-reduced-motion:reduce){body.intro *,#clock .ckt i,.big span,.theme-btn:hover .sw i{animation:none!important}#kpis>*:hover,#dgrid>.dcard:hover{transform:none}}
 
 /* Pantalla dividida: al abrir un módulo, mitad panel / mitad dashboard */
