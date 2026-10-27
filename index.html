@@ -826,7 +826,13 @@ function sbMerge(a,b){
   SYNC_LISTS.forEach(function(k){
     var ids={};(out[k]||[]).forEach(function(x){ids[x.id]=1});
     var dates={};if(k==='gymdays')(out[k]||[]).forEach(function(x){dates[x.date]=1});
-    (oth[k]||[]).forEach(function(x){if(ids[x.id])return;if(k==='gymdays'&&dates[x.date])return;(out[k]=out[k]||[]).push(x)});
+    var gd={};if(k==='gym'){(out.gym||[]).forEach(function(x){gd[x.date]=1});(out.gymdays||[]).forEach(function(x){gd[x.date]=1})}
+    var rn={};if(k==='routines')(out[k]||[]).forEach(function(x){rn[(x.name||'').toLowerCase()]=1});
+    (oth[k]||[]).forEach(function(x){if(ids[x.id])return;if(k==='gymdays'&&dates[x.date])return;
+      /* un día de gym guardado en el dispositivo más reciente sustituye al del otro: si no, cada guardado duplica las series */
+      if(k==='gym'&&gd[x.date])return;
+      if(k==='routines'&&rn[(x.name||'').toLowerCase()])return;
+      (out[k]=out[k]||[]).push(x)});
   });
   out.example=false;return out;
 }
