@@ -683,6 +683,15 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
 .gsets .gs select.gst{min-width:0;width:100%;padding:6px 22px 6px 8px;font:600 12.5px var(--font-mono);min-height:40px}
 .gsets .gs select.gst[data-t=w]{color:var(--muted)}
 .gsets .gs select.gst[data-t=f]{color:var(--accent);border-color:var(--accent)}
+
+.gmv{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font:600 12px var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.gmb{display:flex;gap:8px}
+.gmb .btn{padding:6px 12px;min-height:36px;font-size:12px}
+.gmb .btn:disabled{opacity:.35;cursor:default}
+#gsx .gdv.went{background:var(--soft);border-color:var(--accent)}
+#gsx .gdv.went .gs{color:var(--accent)}
+#gsx .gdv.sel{background:var(--ink);color:var(--page);border-color:var(--ink)}
+#gsx .gdv.sel .gl,#gsx .gdv.sel .gt{color:var(--page)}
 </style>
 <div id="app">
   <header id="top">
@@ -1070,6 +1079,16 @@ VIEWS.resumen=function(){
 };
 
 /* Gastos */
+function gsInner(){
+  var e=curEdit('gastos'),sel=e?e.date:(ui.date.gastos||today());
+  var ws=ui.gsw||weekStart(sel),we=addDays(ws,6),h='';
+  for(var i=0;i<7;i++){
+    var d=addDays(ws,i),v=sum(S.gastos.filter(function(g){return g.date===d}),function(g){return g.amount});
+    h+='<button type="button" class="gdv'+(d===today()?' today':'')+(d===sel?' sel':'')+(v>0?' went':'')+'" data-act="gsday" data-d="'+d+'" aria-pressed="'+(d===sel)+'" aria-label="'+esc(fdate(d))+(v>0?', gastado '+eur(v):', sin gastos')+'"><span class="gl">'+DOW(d)+'</span><span class="gn">'+(+d.slice(8))+'</span><span class="gs">'+(v>0?'•':'')+'</span><span class="gt">'+(v>0?(v<1?'<1€':Math.round(v)+'€'):'')+'</span></button>';
+  }
+  return '<div class="bar"><h3 style="margin:0">Día del gasto · '+esc(fshort(ws))+' – '+esc(fshort(we))+'</h3><div class="nav"><button class="btn" type="button" data-act="gsw" data-d="-1" aria-label="Semana anterior">←</button><button class="btn" type="button" data-act="gsw" data-d="0">Hoy</button><button class="btn" type="button" data-act="gsw" data-d="1" aria-label="Semana siguiente">→</button></div></div><div class="gstrip" style="margin-top:12px">'+h+'</div>';
+}
+function gsRefresh(){var x=$('#gsx');if(x)x.innerHTML=gsInner()}
 VIEWS.gastos=function(){
   var month=ui.month||today().slice(0,7),Y=+month.slice(0,4),M=+month.slice(5),dim=new Date(Y,M,0).getDate();
   var cur=month===today().slice(0,7),elapsed=cur?+today().slice(8):dim;
@@ -1097,6 +1116,7 @@ VIEWS.gastos=function(){
     sel('gastos','cat','Categoría',CATS.map(function(c){return c.k}),e?e.cat:'Comida')+
     fld('gastos','amount','Importe (€)','number',e?e.amount:'','required min="0" step="any" inputmode="decimal"'));
   return '<div class="bar"><h2>Gastos</h2><div class="nav"><button class="btn" data-act="month" data-d="-1" aria-label="Mes anterior">←</button><strong>'+esc(new Date(Y,M-1,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'}))+'</strong><button class="btn" data-act="month" data-d="1" aria-label="Mes siguiente">→</button></div></div>'+
+  '<div class="card" id="gsx">'+gsInner()+'</div>'+
   '<div class="grid">'+form+iform+'</div>'+
   '<div class="tiles">'+
     tile('Gastos del mes',eur(total),'','',items.length+' movimientos')+
@@ -1248,7 +1268,9 @@ function builderHtml(){
         var exField=custom
           ?'<label class="f gname" for="'+id+'exercise"><span>Ejercicio <button type="button" class="ic" data-act="gpick" data-k="'+it.k+'">Elegir de la lista</button></span><input id="'+id+'exercise" type="text" data-k="'+it.k+'" data-f="exercise" maxlength="60" placeholder="Nombre del ejercicio" value="'+esc(it.exercise)+'"></label>'
           :'<label class="f gname" for="'+id+'exercise"><span>Ejercicio</span><select id="'+id+'exercise" data-k="'+it.k+'" data-f="exercise"><option value="">Elige un ejercicio…</option>'+opts.map(function(x){return '<option'+(x===it.exercise?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'<option value="__other">＋ Otro (escribir)</option></select></label>';
-        return '<div class="gi">'+
+        var pos=s.items.indexOf(it),tot=s.items.length;
+        var mv='<div class="gmv"><span>Ejercicio '+(pos+1)+' de '+tot+'</span><span class="gmb"><button type="button" class="btn" data-act="gup" data-k="'+it.k+'"'+(pos===0?' disabled':'')+' aria-label="Subir ejercicio">↑ Subir</button><button type="button" class="btn" data-act="gdown" data-k="'+it.k+'"'+(pos===tot-1?' disabled':'')+' aria-label="Bajar ejercicio">↓ Bajar</button></span></div>';
+        return '<div class="gi" id="gcard-'+it.k+'">'+(tot>1?mv:'')+
           '<label class="f gmus" for="'+id+'muscle"><span>Músculo</span><select id="'+id+'muscle" data-k="'+it.k+'" data-f="muscle">'+MUSCLES.map(function(m){return '<option'+(m===it.muscle?' selected':'')+'>'+esc(m)+'</option>'}).join('')+'</select></label>'+exField+
           '<div class="gsets">'+it.rows.map(function(x,n){
             var rt=x.t||(n===0?'w':'n');
@@ -1638,6 +1660,10 @@ document.addEventListener('click',function(e){
   else if(a==='gwent'){ui.sess.went=b.dataset.v==='1';ui.gmsg='';ui.del='';if(!ui.sess.went&&!S.gym.some(function(g){return g.date===ui.sess.date})){ui.sess.note='';ui.sess.tags=[];HANDLERS.gymday()}else render()}
   else if(a==='goalsreset'){delete S.set.goals;commit()}
   else if(a==='gtag'){toggleTag(b.dataset.v);ui.gmsg='';render()}
+  else if(a==='gsday'){ui.date.gastos=b.dataset.d;var di=$('#f-gastos-date');if(di)di.value=b.dataset.d;gsRefresh();var ci=$('#f-gastos-concept');if(ci)ci.focus()}
+  else if(a==='gsw'){var dd=+b.dataset.d,cur=ui.gsw||weekStart(ui.date.gastos||today());ui.gsw=dd===0?'':addDays(cur,7*dd);gsRefresh()}
+  else if(a==='gup'||a==='gdown'){var its=ui.sess.items,ix=its.findIndex(function(i){return i.k===b.dataset.k}),jx=a==='gup'?ix-1:ix+1;
+    if(ix>-1&&jx>=0&&jx<its.length){var tmp=its[ix];its[ix]=its[jx];its[jx]=tmp;render();var mv=$('#gcard-'+b.dataset.k);if(mv)mv.scrollIntoView({block:'center',behavior:'smooth'})}}
   else if(a==='grsave'){
     var nm=(($('#grname')||{}).value||'').trim().slice(0,30);
     var its=ui.sess.items.filter(function(i){return (i.exercise||'').trim()}).map(function(i){return {exercise:i.exercise.trim().slice(0,60),muscle:i.muscle,n:Math.max(2,Math.min(8,(i.rows||[]).length))}});
@@ -1673,6 +1699,7 @@ document.addEventListener('input',function(e){
 });
 document.addEventListener('change',function(e){
   if(e.target.id==='exsel'){ui.ex=e.target.value;render()}
+  else if(e.target.id==='f-gastos-date'&&e.target.value){ui.date.gastos=e.target.value;ui.gsw='';gsRefresh()}
   else if(e.target.tagName==='SELECT'&&e.target.dataset&&e.target.dataset.k&&ui.sess&&(e.target.dataset.f==='muscle'||e.target.dataset.f==='exercise')){
     var t2=e.target,it2=ui.sess.items.filter(function(i){return i.k===t2.dataset.k})[0];
     if(it2){
