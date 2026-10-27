@@ -1396,8 +1396,8 @@ VIEWS.comida=function(){
     fld('comida','fat','Grasas (g)','number',e&&e.fat!=null?e.fat:'','min="0" step="any" inputmode="decimal"')+
     fld('comida','sugar','Azúcares (g)','number',e&&e.sugar!=null?e.sugar:'','min="0" step="any" inputmode="decimal"')+
     '');
-  return '<div class="bar"><h2>Comida</h2><div class="nav"><button class="btn" data-act="day" data-d="-1" aria-label="Día anterior">←</button><strong>'+(day===today()?'Hoy':esc(fshort(day)))+'</strong><button class="btn" data-act="day" data-d="1" aria-label="Día siguiente">→</button>'+(day!==today()?'<button class="btn" data-act="day" data-d="0">Hoy</button>':'')+'</div></div>'+form+
-  dsBox('comida')+'<div class="grid"><div class="card"><h3>Calorías del día</h3><p class="tv">'+num(kc)+'<small>/ '+num(S.set.kcal)+' kcal</small></p>'+meter(kc,S.set.kcal,kc>S.set.kcal*1.05?'var(--bad)':'var(--s2)')+'<p class="ts">'+(kc>S.set.kcal?pill('warn',num(kc-S.set.kcal)+' kcal por encima'):num(S.set.kcal-kc)+' kcal por tomar')+' · Proteína '+num(p)+' / '+num(S.set.prot)+' g</p><div style="margin-top:14px">'+stack+'</div></div>'+
+  return '<div class="bar"><h2>Comida</h2><div class="nav"><button class="btn" data-act="day" data-d="-1" aria-label="Día anterior">←</button><strong>'+(day===today()?'Hoy':esc(fshort(day)))+'</strong><button class="btn" data-act="day" data-d="1" aria-label="Día siguiente">→</button>'+(day!==today()?'<button class="btn" data-act="day" data-d="0">Hoy</button>':'')+'</div></div>'+dsBox('comida')+form+
+  '<div class="grid"><div class="card"><h3>Calorías del día</h3><p class="tv">'+num(kc)+'<small>/ '+num(S.set.kcal)+' kcal</small></p>'+meter(kc,S.set.kcal,kc>S.set.kcal*1.05?'var(--bad)':'var(--s2)')+'<p class="ts">'+(kc>S.set.kcal?pill('warn',num(kc-S.set.kcal)+' kcal por encima'):num(S.set.kcal-kc)+' kcal por tomar')+' · Proteína '+num(p)+' / '+num(S.set.prot)+' g</p><div style="margin-top:14px">'+stack+'</div></div>'+
   '<div class="card"><h3>Últimos 7 días</h3>'+kcalCols(day,7)+'</div></div>'+
   macroCard(it)+
   '<div class="card"><h3>Registro del día</h3><div id="list">'+LISTS.comida()+'</div></div>';
