@@ -1034,9 +1034,12 @@ function muscleBars(){
   return hbars(rows,max);
 }
 var RGROUPS=[{n:'Pecho',m:['Pecho']},{n:'Core',m:['Core']},{n:'Hombros',m:['Hombro']},{n:'Brazos',m:['Bíceps','Tríceps']},{n:'Piernas',m:['Cuádriceps','Isquios','Glúteo','Gemelo']},{n:'Espalda',m:['Espalda']}];
-function radarChart(){
-  var ws=weekStart(today()),pw=addDays(ws,-7);
-  function cnt(a,b,ms){return sum(S.gym.filter(function(g){return g.date>=a&&g.date<=b&&ms.indexOf(g.muscle)>-1}),wsets)}
+function radarChart(live){
+  var ws=weekStart(today()),pw=addDays(ws,-7),src=S.gym;
+  if(live&&ui.sess&&ui.sess.went&&ui.sess.items&&ui.sess.items.length){
+    src=S.gym.filter(function(g){return g.date!==ui.sess.date}).concat(ui.sess.items.filter(function(i){return i.exercise}).map(function(i){return {date:ui.sess.date,muscle:i.muscle,rows:i.rows.filter(function(x){return +x.r||+x.k}).map(function(x){return {r:+x.r||0,k:+x.k||0,t:x.t}})}}));
+  }
+  function cnt(a,b,ms){return sum(src.filter(function(g){return g.date>=a&&g.date<=b&&ms.indexOf(g.muscle)>-1}),wsets)}
   var cur=RGROUPS.map(function(r){return cnt(ws,addDays(ws,6),r.m)}),prev=RGROUPS.map(function(r){return cnt(pw,addDays(pw,6),r.m)});
   var mx=Math.max.apply(null,[6].concat(cur,prev)),N=RGROUPS.length,cx=170,cy=140,R=95;
   function pt(i,v){var a=-Math.PI/2+i*2*Math.PI/N+Math.PI/N,r=R*v/mx;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]}
@@ -1369,7 +1372,7 @@ VIEWS.gym=function(){
     tile('Músculos en meta',hit+' / '+MAIN.length,'',meter(hit,MAIN.length,'var(--s3)'),'Series mínimas por músculo')+
     tile('Volumen',num(vol),'kg','','Series × reps × kg')+
   '</div>'+
-  '<div class="card"><h3>Equilibrio muscular · semana actual vs anterior</h3>'+radarChart()+'</div>'+
+  '<div class="card"><h3>Equilibrio muscular · semana actual vs anterior</h3><div id="radarbox">'+radarChart(true)+'</div></div>'+
   '<div class="card"><h3>Series por músculo · meta semanal</h3>'+rows+'</div>'+
   '<div class="card"><h3>Semanas anteriores · series por músculo</h3>'+tbl+'<p class="ts">✓ indica que llegaste al mínimo: '+MAIN.map(function(m){return m+' '+gtxt(m)}).join(' · ')+'. <button class="ic" data-go="cuerpo">Editar rangos</button></p></div>'+
   '<div class="card"><div class="bar"><h3 style="margin:0">Progreso</h3>'+(exs.length?'<select id="exsel" aria-label="Ejercicio" style="max-width:220px">'+exs.map(function(x){return '<option'+(x===ex?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select>':'')+'</div>'+
@@ -2429,6 +2432,8 @@ initDb();
 initScene();
 setDrawer(ui.tab!=='escritorio');
 renderHud();
+function radarLive(){var x=$('#radarbox');if(x)x.innerHTML=radarChart(true)}
+document.addEventListener('input',radarLive);document.addEventListener('change',radarLive);
 var dg=null;
 function sc(el){while(el&&el!==document.body){var o=getComputedStyle(el).overflowY;if((o==='auto'||o==='scroll')&&el.scrollHeight>el.clientHeight)return el;el=el.parentElement}return document.scrollingElement}
 document.addEventListener('pointerdown',function(e){var h=e.target.closest&&e.target.closest('.gdrag');if(!h)return;var card=h.closest('.gi');if(!card)return;e.preventDefault();dg={card:card,sc:sc(card),y:e.clientY,id:e.pointerId};card.classList.add('dragging');try{h.setPointerCapture(e.pointerId)}catch(x){}});
