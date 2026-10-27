@@ -994,7 +994,8 @@ function drawLines(){
 /* ---------- piezas de interfaz ---------- */
 function pill(kind,text){return '<span class="pill '+kind+'">'+({good:'✓',warn:'▲',bad:'✕'}[kind])+' '+esc(text)+'</span>'}
 function tile(label,value,unit,body,sub){return '<div class="tile"><p class="tl">'+esc(label)+'</p><p class="tv">'+value+(unit?'<small>'+esc(unit)+'</small>':'')+'</p>'+(body||'')+(sub?'<p class="ts">'+sub+'</p>':'')+'</div>'}
-function fld(t,name,label,type,val,extra,cls){return '<label class="f'+(cls?' '+cls:'')+'" for="f-'+t+'-'+name+'"><span>'+label+'</span><input id="f-'+t+'-'+name+'" name="'+name+'" type="'+type+'" value="'+esc(val==null?'':val)+'" '+(extra||'')+'></label>'}
+var HIDEDATE={gastos:1,ingresos:1,comida:1,cuerpom:1,cuerpon:1};
+function fld(t,name,label,type,val,extra,cls){if(name==='date'&&HIDEDATE[t])return '<input id="f-'+t+'-date" name="date" type="hidden" value="'+esc(val==null?'':val)+'">';return '<label class="f'+(cls?' '+cls:'')+'" for="f-'+t+'-'+name+'"><span>'+label+'</span><input id="f-'+t+'-'+name+'" name="'+name+'" type="'+type+'" value="'+esc(val==null?'':val)+'" '+(extra||'')+'></label>'}
 function sel(t,name,label,opts,val,cls){return '<label class="f'+(cls?' '+cls:'')+'" for="f-'+t+'-'+name+'"><span>'+label+'</span><select id="f-'+t+'-'+name+'" name="'+name+'">'+opts.map(function(o){return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>'}).join('')+'</select></label>'}
 function curEdit(t){return ui.edit&&ui.edit.t===t?(S[t].filter(function(x){return x.id===ui.edit.id})[0]||null):null}
 function formWrap(t,title,fields){
@@ -1264,7 +1265,7 @@ function previewHtml(){
 function updatePreview(){var el=$('#gprev');if(el)el.innerHTML=previewHtml()}
 function builderHtml(){
   var s=ui.sess,h='<form class="card" id="gform" data-form="gymday" autocomplete="off"><h3>Registro del día</h3>';
-  h+='<div class="fg"><label class="f" for="gsdate"><span>Fecha</span><input id="gsdate" type="date" value="'+s.date+'" max="'+addDays(today(),1)+'" required></label><div class="f"><span>Atajo</span><button class="btn" type="button" data-act="gtoday">Hoy</button></div></div>';
+  h+='<input id="gsdate" type="hidden" value="'+s.date+'">';
   h+='<div class="seg" role="group" aria-label="¿Has ido al gym?"><button type="button" class="'+(s.went===true?'on':'')+'" data-act="gwent" data-v="1" aria-pressed="'+(s.went===true)+'">Sí, he ido</button><button type="button" class="'+(s.went===false?'on off':'')+'" data-act="gwent" data-v="0" aria-pressed="'+(s.went===false)+'">No he ido</button></div>';
   if(s.went===null){
     h+='<p class="ts">Elige si has ido ese día para empezar a registrar.</p>';
