@@ -688,10 +688,10 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
 .gmb{display:flex;gap:8px}
 .gmb .btn{padding:6px 12px;min-height:36px;font-size:12px}
 .gmb .btn:disabled{opacity:.35;cursor:default}
-#gsx .gdv.went{background:var(--soft);border-color:var(--accent)}
-#gsx .gdv.went .gs{color:var(--accent)}
-#gsx .gdv.sel{background:var(--ink);color:var(--page);border-color:var(--ink)}
-#gsx .gdv.sel .gl,#gsx .gdv.sel .gt{color:var(--page)}
+.dsx .gdv.went{background:var(--soft);border-color:var(--accent)}
+.dsx .gdv.went .gs{color:var(--accent)}
+.dsx .gdv.sel{background:var(--ink);color:var(--page);border-color:var(--ink)}
+.dsx .gdv.sel .gl,.dsx .gdv.sel .gt{color:var(--page)}
 
 .gdrag{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border:2px solid var(--edge);padding:8px 14px;min-height:40px;display:inline-flex;align-items:center;background:var(--card);color:var(--ink);letter-spacing:.1em}
 .gi.dragging{outline:3px solid var(--accent);box-shadow:0 10px 30px rgba(0,0,0,.25);position:relative;z-index:5}
@@ -1083,16 +1083,21 @@ VIEWS.resumen=function(){
 };
 
 /* Gastos */
-function gsInner(){
-  var e=curEdit('gastos'),sel=e?e.date:(ui.date.gastos||today());
-  var ws=ui.gsw||weekStart(sel),we=addDays(ws,6),h='';
+var DSC={
+  gastos:{t:'Día del gasto',sel:function(){var e=curEdit('gastos');return e?e.date:(ui.date.gastos||today())},val:function(d){var v=sum(S.gastos.filter(function(g){return g.date===d}),function(g){return g.amount});return v>0?(v<1?'<1€':Math.round(v)+'€'):''},lab:function(d,v){return v?', gastado '+v:', sin gastos'}},
+  comida:{t:'Día de comida',sel:function(){return ui.day||today()},val:function(d){var v=sum(S.comida.filter(function(c){return c.date===d}),function(c){return c.kcal});return v>0?num(v):''},lab:function(d,v){return v?', '+v+' kcal':', sin comidas'}},
+  cuerpo:{t:'Día del registro',sel:function(){var e=curEdit('cuerpo');return e?e.date:(ui.date.cuerpo||today())},val:function(d){var r=S.cuerpo.filter(function(c){return c.date===d})[0];return r?(r.weight!=null?num(r.weight,1):'•'):''},lab:function(d,v){return v?', con registro':', sin registro'}}
+};
+function dsInner(m){
+  var c=DSC[m],sel=c.sel(),ws=(ui.dsw&&ui.dsw[m])||weekStart(sel),we=addDays(ws,6),h='';
   for(var i=0;i<7;i++){
-    var d=addDays(ws,i),v=sum(S.gastos.filter(function(g){return g.date===d}),function(g){return g.amount});
-    h+='<button type="button" class="gdv'+(d===today()?' today':'')+(d===sel?' sel':'')+(v>0?' went':'')+'" data-act="gsday" data-d="'+d+'" aria-pressed="'+(d===sel)+'" aria-label="'+esc(fdate(d))+(v>0?', gastado '+eur(v):', sin gastos')+'"><span class="gl">'+DOW(d)+'</span><span class="gn">'+(+d.slice(8))+'</span><span class="gs">'+(v>0?'•':'')+'</span><span class="gt">'+(v>0?(v<1?'<1€':Math.round(v)+'€'):'')+'</span></button>';
+    var d=addDays(ws,i),v=c.val(d);
+    h+='<button type="button" class="gdv'+(d===today()?' today':'')+(d===sel?' sel':'')+(v?' went':'')+'" data-act="dsday" data-m="'+m+'" data-d="'+d+'" aria-pressed="'+(d===sel)+'" aria-label="'+esc(fdate(d))+c.lab(d,v)+'"><span class="gl">'+DOW(d)+'</span><span class="gn">'+(+d.slice(8))+'</span><span class="gs">'+(v?'•':'')+'</span><span class="gt">'+v+'</span></button>';
   }
-  return '<div class="bar"><h3 style="margin:0">Día del gasto · '+esc(fshort(ws))+' – '+esc(fshort(we))+'</h3><div class="nav"><button class="btn" type="button" data-act="gsw" data-d="-1" aria-label="Semana anterior">←</button><button class="btn" type="button" data-act="gsw" data-d="0">Hoy</button><button class="btn" type="button" data-act="gsw" data-d="1" aria-label="Semana siguiente">→</button></div></div><div class="gstrip" style="margin-top:12px">'+h+'</div>';
+  return '<div class="bar"><h3 style="margin:0">'+c.t+' · '+esc(fshort(ws))+' – '+esc(fshort(we))+'</h3><div class="nav"><button class="btn" type="button" data-act="dsw" data-m="'+m+'" data-d="-1" aria-label="Semana anterior">←</button><button class="btn" type="button" data-act="dsw" data-m="'+m+'" data-d="0">Hoy</button><button class="btn" type="button" data-act="dsw" data-m="'+m+'" data-d="1" aria-label="Semana siguiente">→</button></div></div><div class="gstrip" style="margin-top:12px">'+h+'</div>';
 }
-function gsRefresh(){var x=$('#gsx');if(x)x.innerHTML=gsInner()}
+function dsBox(m){return '<div class="card dsx" id="dsx-'+m+'">'+dsInner(m)+'</div>'}
+function dsRefresh(m){var x=$('#dsx-'+m);if(x)x.innerHTML=dsInner(m)}
 VIEWS.gastos=function(){
   var month=ui.month||today().slice(0,7),Y=+month.slice(0,4),M=+month.slice(5),dim=new Date(Y,M,0).getDate();
   var cur=month===today().slice(0,7),elapsed=cur?+today().slice(8):dim;
@@ -1120,7 +1125,7 @@ VIEWS.gastos=function(){
     sel('gastos','cat','Categoría',CATS.map(function(c){return c.k}),e?e.cat:'Comida')+
     fld('gastos','amount','Importe (€)','number',e?e.amount:'','required min="0" step="any" inputmode="decimal"'));
   return '<div class="bar"><h2>Gastos</h2><div class="nav"><button class="btn" data-act="month" data-d="-1" aria-label="Mes anterior">←</button><strong>'+esc(new Date(Y,M-1,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'}))+'</strong><button class="btn" data-act="month" data-d="1" aria-label="Mes siguiente">→</button></div></div>'+
-  '<div class="card" id="gsx">'+gsInner()+'</div>'+
+  dsBox('gastos')+
   '<div class="grid">'+form+iform+'</div>'+
   '<div class="tiles">'+
     tile('Gastos del mes',eur(total),'','',items.length+' movimientos')+
@@ -1392,7 +1397,7 @@ VIEWS.comida=function(){
     fld('comida','sugar','Azúcares (g)','number',e&&e.sugar!=null?e.sugar:'','min="0" step="any" inputmode="decimal"')+
     '');
   return '<div class="bar"><h2>Comida</h2><div class="nav"><button class="btn" data-act="day" data-d="-1" aria-label="Día anterior">←</button><strong>'+(day===today()?'Hoy':esc(fshort(day)))+'</strong><button class="btn" data-act="day" data-d="1" aria-label="Día siguiente">→</button>'+(day!==today()?'<button class="btn" data-act="day" data-d="0">Hoy</button>':'')+'</div></div>'+form+
-  '<div class="grid"><div class="card"><h3>Calorías del día</h3><p class="tv">'+num(kc)+'<small>/ '+num(S.set.kcal)+' kcal</small></p>'+meter(kc,S.set.kcal,kc>S.set.kcal*1.05?'var(--bad)':'var(--s2)')+'<p class="ts">'+(kc>S.set.kcal?pill('warn',num(kc-S.set.kcal)+' kcal por encima'):num(S.set.kcal-kc)+' kcal por tomar')+' · Proteína '+num(p)+' / '+num(S.set.prot)+' g</p><div style="margin-top:14px">'+stack+'</div></div>'+
+  dsBox('comida')+'<div class="grid"><div class="card"><h3>Calorías del día</h3><p class="tv">'+num(kc)+'<small>/ '+num(S.set.kcal)+' kcal</small></p>'+meter(kc,S.set.kcal,kc>S.set.kcal*1.05?'var(--bad)':'var(--s2)')+'<p class="ts">'+(kc>S.set.kcal?pill('warn',num(kc-S.set.kcal)+' kcal por encima'):num(S.set.kcal-kc)+' kcal por tomar')+' · Proteína '+num(p)+' / '+num(S.set.prot)+' g</p><div style="margin-top:14px">'+stack+'</div></div>'+
   '<div class="card"><h3>Últimos 7 días</h3>'+kcalCols(day,7)+'</div></div>'+
   macroCard(it)+
   '<div class="card"><h3>Registro del día</h3><div id="list">'+LISTS.comida()+'</div></div>';
@@ -1468,7 +1473,7 @@ VIEWS.cuerpo=function(){
     MAIN.map(function(m){return '<div class="f"><span>'+esc(m)+'</span><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input type="number" name="lo_'+esc(m)+'" aria-label="'+esc(m)+' mínimo" min="0" max="60" step="1" inputmode="numeric" value="'+GOALS[m][0]+'" required><input type="number" name="hi_'+esc(m)+'" aria-label="'+esc(m)+' máximo" min="0" max="60" step="1" inputmode="numeric" value="'+GOALS[m][1]+'" required></div></div>'}).join('')+
     '</div><p class="ts">Izquierda: mínimo · derecha: máximo.</p><div class="fa"><button class="btn primary" type="submit">Guardar series</button><button class="btn" type="button" data-act="goalsreset">Restablecer</button></div></form>';
   var legend='<div class="legend">'+MOODS.map(function(m){return '<span><span class="dot" style="--c:'+m.c+'"></span>'+m.l+'</span>'}).join('')+'</div>';
-  return '<div class="bar"><h2>Personal</h2></div>'+form+
+  return '<div class="bar"><h2>Personal</h2></div>'+dsBox('cuerpo')+form+
   '<div class="tiles">'+
     tile('Peso actual',lw?num(lw.weight,1):'—','kg','',wsub)+
     tile('Ánimo (7 días)',mo?esc(mo.l):'—','',m7.length?meter(ma,5,mo.c):'',m7.length?'Media de '+m7.length+' registros':'Aún sin registros')+
@@ -1664,8 +1669,11 @@ document.addEventListener('click',function(e){
   else if(a==='gwent'){ui.sess.went=b.dataset.v==='1';ui.gmsg='';ui.del='';if(!ui.sess.went&&!S.gym.some(function(g){return g.date===ui.sess.date})){ui.sess.note='';ui.sess.tags=[];HANDLERS.gymday()}else render()}
   else if(a==='goalsreset'){delete S.set.goals;commit()}
   else if(a==='gtag'){toggleTag(b.dataset.v);ui.gmsg='';render()}
-  else if(a==='gsday'){ui.date.gastos=b.dataset.d;var di=$('#f-gastos-date');if(di)di.value=b.dataset.d;gsRefresh();var ci=$('#f-gastos-concept');if(ci)ci.focus()}
-  else if(a==='gsw'){var dd=+b.dataset.d,cur=ui.gsw||weekStart(ui.date.gastos||today());ui.gsw=dd===0?'':addDays(cur,7*dd);gsRefresh()}
+  else if(a==='dsday'){var m=b.dataset.m,d=b.dataset.d;
+    if(m==='gastos'){ui.date.gastos=d;ui.date.ingresos=d;['f-gastos-date','f-ingresos-date'].forEach(function(i){var x=$('#'+i);if(x)x.value=d});dsRefresh('gastos');var ci=$('#f-gastos-concept');if(ci)ci.focus()}
+    else if(m==='comida'){ui.day=d;ui.del='';render()}
+    else if(m==='cuerpo'){ui.date.cuerpo=d;render()}}
+  else if(a==='dsw'){var m2=b.dataset.m,dd=+b.dataset.d;ui.dsw=ui.dsw||{};ui.dsw[m2]=dd===0?weekStart(today()):addDays(ui.dsw[m2]||weekStart(DSC[m2].sel()),7*dd);dsRefresh(m2)}
   else if(a==='gup'||a==='gdown'){var its=ui.sess.items,ix=its.findIndex(function(i){return i.k===b.dataset.k}),jx=a==='gup'?ix-1:ix+1;
     if(ix>-1&&jx>=0&&jx<its.length){var tmp=its[ix];its[ix]=its[jx];its[jx]=tmp;render();var mv=$('#gcard-'+b.dataset.k);if(mv)mv.scrollIntoView({block:'center',behavior:'smooth'})}}
   else if(a==='grsave'){
@@ -1703,7 +1711,7 @@ document.addEventListener('input',function(e){
 });
 document.addEventListener('change',function(e){
   if(e.target.id==='exsel'){ui.ex=e.target.value;render()}
-  else if(e.target.id==='f-gastos-date'&&e.target.value){ui.date.gastos=e.target.value;ui.gsw='';gsRefresh()}
+  else if(e.target.id==='f-gastos-date'&&e.target.value){ui.date.gastos=e.target.value;ui.date.ingresos=e.target.value;if(ui.dsw)ui.dsw.gastos='';dsRefresh('gastos')}
   else if(e.target.tagName==='SELECT'&&e.target.dataset&&e.target.dataset.k&&ui.sess&&(e.target.dataset.f==='muscle'||e.target.dataset.f==='exercise')){
     var t2=e.target,it2=ui.sess.items.filter(function(i){return i.k===t2.dataset.k})[0];
     if(it2){
