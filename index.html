@@ -1031,6 +1031,22 @@ function muscleBars(){
   var max=Math.max.apply(null,[16].concat(rows.map(function(r){return r.v})));
   return hbars(rows,max);
 }
+var RGROUPS=[{n:'Pecho',m:['Pecho']},{n:'Core',m:['Core']},{n:'Hombros',m:['Hombro']},{n:'Brazos',m:['Bíceps','Tríceps']},{n:'Piernas',m:['Cuádriceps','Isquios','Glúteo','Gemelo']},{n:'Espalda',m:['Espalda']}];
+function radarChart(){
+  var ws=weekStart(today()),pw=addDays(ws,-7);
+  function cnt(a,b,ms){return sum(S.gym.filter(function(g){return g.date>=a&&g.date<=b&&ms.indexOf(g.muscle)>-1}),wsets)}
+  var cur=RGROUPS.map(function(r){return cnt(ws,addDays(ws,6),r.m)}),prev=RGROUPS.map(function(r){return cnt(pw,addDays(pw,6),r.m)});
+  var mx=Math.max.apply(null,[6].concat(cur,prev)),N=RGROUPS.length,cx=170,cy=140,R=95;
+  function pt(i,v){var a=-Math.PI/2+i*2*Math.PI/N+Math.PI/N,r=R*v/mx;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]}
+  var g='',lv=4,k,i;
+  for(k=1;k<=lv;k++){var ring=[];for(i=0;i<N;i++)ring.push(pt(i,mx*k/lv).map(function(x){return x.toFixed(1)}).join(','));g+='<polygon points="'+ring.join(' ')+'" fill="none" stroke="var(--line)" stroke-width="1"/>'}
+  for(i=0;i<N;i++){var e=pt(i,mx),l=pt(i,mx*1.22);g+='<line x1="'+cx+'" y1="'+cy+'" x2="'+e[0].toFixed(1)+'" y2="'+e[1].toFixed(1)+'" stroke="var(--line)"/><text x="'+l[0].toFixed(1)+'" y="'+(l[1]+4).toFixed(1)+'" text-anchor="'+(l[0]<cx-8?'end':l[0]>cx+8?'start':'middle')+'" font-size="12" fill="var(--muted)" font-family="var(--font-mono)">'+RGROUPS[i].n+'</text>'}
+  function poly(a,fill,stroke,w){return '<polygon points="'+a.map(function(v,i){return pt(i,v).map(function(x){return x.toFixed(1)}).join(',')}).join(' ')+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+w+'" stroke-linejoin="round"/>'}
+  g+=poly(prev,'var(--muted)','var(--muted)',2).replace('fill="var(--muted)"','fill="var(--muted)" fill-opacity=".18"')+poly(cur,'var(--accent)','var(--accent)',2.5).replace('fill="var(--accent)"','fill="var(--accent)" fill-opacity=".25"');
+  cur.forEach(function(v,i){var p=pt(i,v);g+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="4" fill="var(--accent)"><title>'+RGROUPS[i].n+': '+v+' series esta semana · '+prev[i]+' la anterior</title></circle>'});
+  var desc=RGROUPS.map(function(r,i){return r.n+' '+cur[i]+' (antes '+prev[i]+')'}).join(', ');
+  return '<svg viewBox="0 0 340 290" role="img" aria-label="Series por grupo muscular, semana actual frente a la anterior: '+esc(desc)+'" style="width:100%;max-width:420px;height:auto;display:block;margin:0 auto">'+g+'</svg><div class="legend" style="justify-content:center"><span><span class="dot" style="--c:var(--accent)"></span>Actual</span><span><span class="dot" style="--c:var(--muted)"></span>Anterior</span></div>';
+}
 function weightLine(days,key){
   var from=addDays(today(),-days);
   var pts=S.cuerpo.filter(function(c){return c.weight!=null&&c.date>=from}).sort(function(a,b){return a.date<b.date?-1:1}).map(function(c){return {x:dn(c.date),y:c.weight,label:fshort(c.date),tip:fdate(c.date)+': '+num(c.weight,1)+' kg'}});
@@ -1078,6 +1094,7 @@ VIEWS.resumen=function(){
     '<div class="card"><h3>Gasto · últimos 14 días</h3>'+gastoCols(t,14)+'</div>'+
     '<div class="card"><h3>Calorías · últimos 7 días</h3>'+kcalCols(t,7)+'</div>'+
     '<div class="card"><h3>Series por músculo · esta semana</h3>'+muscleBars()+'</div>'+
+    '<div class="card"><h3>Equilibrio muscular · semana actual vs anterior</h3>'+radarChart()+'</div>'+
     '<div class="card"><h3>Peso · 60 días</h3>'+weightLine(60,'rw')+'</div>'+
   '</div>'+
   '<div class="card"><h3>Último movimiento</h3><ul class="rows">'+feed.map(function(f){return '<li class="row"><span class="rd">'+fshort(f.date)+'</span><span><span class="rt">'+esc(f.t)+'</span><span class="rs">'+f.k+'</span></span><span class="rv">'+esc(f.v)+'</span></li>'}).join('')+'</ul></div>';
@@ -1350,6 +1367,7 @@ VIEWS.gym=function(){
     tile('Músculos en meta',hit+' / '+MAIN.length,'',meter(hit,MAIN.length,'var(--s3)'),'Series mínimas por músculo')+
     tile('Volumen',num(vol),'kg','','Series × reps × kg')+
   '</div>'+
+  '<div class="card"><h3>Equilibrio muscular · semana actual vs anterior</h3>'+radarChart()+'</div>'+
   '<div class="card"><h3>Series por músculo · meta semanal</h3>'+rows+'</div>'+
   '<div class="card"><h3>Semanas anteriores · series por músculo</h3>'+tbl+'<p class="ts">✓ indica que llegaste al mínimo: '+MAIN.map(function(m){return m+' '+gtxt(m)}).join(' · ')+'. <button class="ic" data-go="cuerpo">Editar rangos</button></p></div>'+
   '<div class="card"><div class="bar"><h3 style="margin:0">Progreso</h3>'+(exs.length?'<select id="exsel" aria-label="Ejercicio" style="max-width:220px">'+exs.map(function(x){return '<option'+(x===ex?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select>':'')+'</div>'+
