@@ -692,6 +692,10 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
 #gsx .gdv.went .gs{color:var(--accent)}
 #gsx .gdv.sel{background:var(--ink);color:var(--page);border-color:var(--ink)}
 #gsx .gdv.sel .gl,#gsx .gdv.sel .gt{color:var(--page)}
+
+.gdrag{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border:2px solid var(--edge);padding:8px 14px;min-height:40px;display:inline-flex;align-items:center;background:var(--card);color:var(--ink);letter-spacing:.1em}
+.gi.dragging{outline:3px solid var(--accent);box-shadow:0 10px 30px rgba(0,0,0,.25);position:relative;z-index:5}
+.gdrag:active{cursor:grabbing}
 </style>
 <div id="app">
   <header id="top">
@@ -1269,7 +1273,7 @@ function builderHtml(){
           ?'<label class="f gname" for="'+id+'exercise"><span>Ejercicio <button type="button" class="ic" data-act="gpick" data-k="'+it.k+'">Elegir de la lista</button></span><input id="'+id+'exercise" type="text" data-k="'+it.k+'" data-f="exercise" maxlength="60" placeholder="Nombre del ejercicio" value="'+esc(it.exercise)+'"></label>'
           :'<label class="f gname" for="'+id+'exercise"><span>Ejercicio</span><select id="'+id+'exercise" data-k="'+it.k+'" data-f="exercise"><option value="">Elige un ejercicio…</option>'+opts.map(function(x){return '<option'+(x===it.exercise?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'<option value="__other">＋ Otro (escribir)</option></select></label>';
         var pos=s.items.indexOf(it),tot=s.items.length;
-        var mv='<div class="gmv"><span>Ejercicio '+(pos+1)+' de '+tot+'</span><span class="gmb"><button type="button" class="btn" data-act="gup" data-k="'+it.k+'"'+(pos===0?' disabled':'')+' aria-label="Subir ejercicio">↑ Subir</button><button type="button" class="btn" data-act="gdown" data-k="'+it.k+'"'+(pos===tot-1?' disabled':'')+' aria-label="Bajar ejercicio">↓ Bajar</button></span></div>';
+        var mv='<div class="gmv"><span>Ejercicio '+(pos+1)+' de '+tot+'</span><span class="gdrag" data-k="'+it.k+'" role="button" aria-label="Arrastrar para reordenar" title="Arrastra para reordenar">⠿ Arrastrar</span></div>';
         return '<div class="gi" id="gcard-'+it.k+'">'+(tot>1?mv:'')+
           '<label class="f gmus" for="'+id+'muscle"><span>Músculo</span><select id="'+id+'muscle" data-k="'+it.k+'" data-f="muscle">'+MUSCLES.map(function(m){return '<option'+(m===it.muscle?' selected':'')+'>'+esc(m)+'</option>'}).join('')+'</select></label>'+exField+
           '<div class="gsets">'+it.rows.map(function(x,n){
@@ -2396,6 +2400,23 @@ initDb();
 initScene();
 setDrawer(ui.tab!=='escritorio');
 renderHud();
+var dg=null;
+function sc(el){while(el&&el!==document.body){var o=getComputedStyle(el).overflowY;if((o==='auto'||o==='scroll')&&el.scrollHeight>el.clientHeight)return el;el=el.parentElement}return document.scrollingElement}
+document.addEventListener('pointerdown',function(e){var h=e.target.closest&&e.target.closest('.gdrag');if(!h)return;var card=h.closest('.gi');if(!card)return;e.preventDefault();dg={card:card,sc:sc(card),y:e.clientY,id:e.pointerId};card.classList.add('dragging');try{h.setPointerCapture(e.pointerId)}catch(x){}});
+document.addEventListener('pointermove',function(e){if(!dg)return;dg.y=e.clientY;var c=dg.card,sibs=[].slice.call(c.parentNode.children).filter(function(n){return n.classList&&n.classList.contains('gi')&&n!==c});
+ for(var i=0;i<sibs.length;i++){var r=sibs[i].getBoundingClientRect(),m=r.top+r.height/2,cr=c.getBoundingClientRect();
+  if(cr.top>r.top&&e.clientY<m&&sibs[i].compareDocumentPosition(c)&4){c.parentNode.insertBefore(c,sibs[i]);break}
+  if(cr.top<r.top&&e.clientY>m&&c.compareDocumentPosition(sibs[i])&4){c.parentNode.insertBefore(c,sibs[i].nextSibling);break}}
+});
+setInterval(function(){if(!dg||!dg.sc)return;var r=dg.sc===document.scrollingElement?{top:0,bottom:innerHeight}:dg.sc.getBoundingClientRect();
+ if(dg.y<r.top+60)dg.sc.scrollTop-=12;else if(dg.y>r.bottom-60)dg.sc.scrollTop+=12},16);
+function end(){if(!dg)return;var c=dg.card;c.classList.remove('dragging');dg=null;
+ var ids=[].slice.call(c.parentNode.querySelectorAll('.gi')).map(function(n){return n.id.replace('gcard-','')}),its=ui.sess.items;
+ var neu=ids.map(function(k){return its.filter(function(i){return i.k===k})[0]}).filter(Boolean);
+ if(neu.length===its.length&&neu.some(function(x,i){return x!==its[i]})){ui.sess.items=neu;render()}}
+document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);
+
 })();
+
 </script>
 </body></html>
