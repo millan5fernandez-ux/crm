@@ -1379,7 +1379,7 @@ VIEWS.gym=function(){
   '</div>'+
   '<div class="card"><h3>Equilibrio muscular · semana actual vs anterior</h3><div id="radarbox">'+radarChart(true)+'</div></div>'+
   '<div class="card"><h3>Series por músculo · meta semanal</h3>'+rows+'</div>'+
-  '<div class="card"><h3>Semanas anteriores · series por músculo</h3>'+tbl+'<p class="ts">✓ indica que llegaste al mínimo: '+MAIN.map(function(m){return m+' '+gtxt(m)}).join(' · ')+'. <button class="ic" data-go="cuerpo">Editar rangos</button></p></div>'+
+  '<div class="card"><h3>Semanas anteriores · series por músculo</h3>'+tbl+'<p class="ts">✓ indica que llegaste al mínimo: '+MAIN.map(function(m){return m+' '+gtxt(m)}).join(' · ')+'. <button class="ic" data-go="ajustes">Editar rangos</button></p></div>'+
   '<div class="card"><div class="bar"><h3 style="margin:0">Progreso</h3>'+(exs.length?'<select id="exsel" aria-label="Ejercicio" style="max-width:220px">'+exs.map(function(x){return '<option'+(x===ex?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select>':'')+'</div>'+
     (exs.length?lineBox('gx',{pts:pts,aria:'Progreso de '+ex,color:'var(--s2)'})+'<p class="ts">'+(best!=null?'Mejor 1RM estimado: <strong>'+num(best,1)+' kg</strong>':'')+'</p>':'<p class="empty">Registra una sesión para ver el progreso.</p>')+'</div>'+
   '<div class="card"><div class="bar"><h3 style="margin:0">Historial</h3>'+search('Buscar ejercicio o rutina')+'</div><div id="list">'+LISTS.gym()+'</div></div>';
