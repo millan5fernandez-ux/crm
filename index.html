@@ -703,6 +703,9 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
 #side .setgear:hover svg{transform:rotate(60deg)}
 #side .setgear svg{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 @media (max-width:860px){#side .setgear{margin-top:0}}
+
+.tag span{display:none}.tag:hover span,.tag.on span{display:block}
+.tag{padding:5px 11px 5px 10px}
 </style>
 <div id="app">
   <header id="top">
@@ -1986,9 +1989,11 @@ function initScene(){
   var neon=new T.LineSegments(outlineSegs(27,21,2.6,.35,-.35),new T.LineBasicMaterial({color:0xff3b3b,transparent:true,opacity:1}));neon.position.y=-.35;scene.add(neon);
   var neon2=new T.LineSegments(outlineSegs(26,20,2.4,.3,-.3),new T.LineBasicMaterial({color:0x0b0b0b,transparent:true,opacity:.9}));neon2.position.y=-1;scene.add(neon2);
 
+  var lawnMat=M('#cfe6c4',{roughness:1});var lawn=new T.Mesh(Slab(25,19,.1,2.2),lawnMat);lawn.position.y=0;lawn.receiveShadow=true;scene.add(lawn);
   function theme(){
     var cs=getComputedStyle(document.documentElement);
     var bg=new T.Color(cs.getPropertyValue('--bg').trim()||'#e9edf1');
+    lawnMat.color.set(((bg.r+bg.g+bg.b)/3<.3)?'#1d3a2c':'#a8d79a');
     scene.background=null;floorMat.color.set(cs.getPropertyValue('--floor').trim()||'#e9e7dd');neon.material.color.set(cs.getPropertyValue('--accent').trim()||'#ff3b3b');neon2.material.color.set(cs.getPropertyValue('--ink').trim()||'#0b0b0b');base.material.color.set(cs.getPropertyValue('--ink').trim()||'#0b0b0b');
     var dark=(bg.r+bg.g+bg.b)/3<.3;if(!dark){amb.intensity=.78;sun.intensity=.7;return}amb.intensity=dark?.5:.62;sun.intensity=dark?.55:.62;
   }
@@ -2032,7 +2037,7 @@ function initScene(){
   }
 
   /* ESCRITORIO */
-  var zd=zone('resumen',0,0,'#1ed760',9.6,8.4,.5,4.2),D=zd.group;
+  var zd=zone('resumen',0,0,'#1ed760',9.6,8.4,-.4,4.2),D=zd.group;
   add(D,Bx(6.4,.22,2.8),'#c8a47e',0,1.9,0);
   [[-3,-1.2],[3,-1.2],[-3,1.2],[3,1.2]].forEach(function(p){add(D,Bx(.2,1.8,.2),'#6b5442',p[0],.9,p[1])});
   add(D,Cy(.55,.6,.07),'#2b3340',0,2.04,-.8);
@@ -2133,7 +2138,7 @@ function initScene(){
   add(apple,Sp(.07),'#4fa862',.1,.32,0).scale.set(1.8,.5,1);
 
   /* CUERPO */
-  var zb=zone('cuerpo',8.2,4.6,'#c490ff',6.8,5.6,3.4),Q=zb.group;
+  var zb=zone('cuerpo',8.2,4.6,'#c490ff',6.8,5.6,2.4),Q=zb.group;
   add(Q,Bx(3.0,.4,4.2),'#8a6a4f',1.2,.3,0);
   add(Q,Bx(2.8,.35,4.0),'#dbe7f5',1.2,.68,0);
   add(Q,Bx(2.0,.25,.9),'#ffffff',1.2,.98,-1.5);
@@ -2168,7 +2173,7 @@ function initScene(){
 
   /* árboles */
   var trees=[];
-  [[-12,6.5],[-11.8,-8],[12,-7.8],[11.8,7.8],[-4.5,-9.2],[4.8,9.2],[-12.2,0.5],[12.2,0.2],[-3,9.3],[3.5,-9.3]].forEach(function(p,i){
+  [[-12,6.5],[-11.8,-8],[12,-7.8],[11.8,7.8],[-4.5,-9.2],[4.8,9.2]].forEach(function(p,i){
     var t=new T.Group();t.position.set(p[0],0,p[1]);t.userData.p=i;scene.add(t);
     add(t,Cy(.12,.17,.8,18),'#6b5442',0,.4,0);
     var cn=add(t,Sp(.75),i%2?'#5fb35f':'#4fa862',0,1.4,0);cn.scale.set(1,1.15,1);
@@ -2178,19 +2183,16 @@ function initScene(){
   /* decoración */
   var decoClouds=[],bflies=[],lampBulbs=[];
   (function(){
-    /* camino de piedras */
-    for(var i=0;i<7;i++)add(scene,Cy(.5,.55,.08,32),i%2?'#d8d2c8':'#cfc8bc',-4.5+i*1.5,.04,5.4+(i%2?.12:-.12));
-    for(var j=0;j<5;j++)add(scene,Cy(.45,.5,.08,32),j%2?'#d8d2c8':'#cfc8bc',.1+(j%2?.15:-.15),.04,-6.2-j*0);
     /* parterres de flores */
     var fc=['#ff5c8a','#ffd23f','#ff7a3d','#ffffff','#e5322d'];
-    [[-2.2,7.5],[2.4,7.7],[-12.3,-4.8],[12.3,5.2],[9.6,-9.2],[-9.8,9.2]].forEach(function(b,bi){
+    [[-12.3,-4.8],[12.3,5.2],[9.6,-9.2],[-9.8,9.2]].forEach(function(b,bi){
       add(scene,Bx(1.9,.18,1.1),'#6b5442',b[0],.09,b[1]);
       for(var k=0;k<7;k++){var fx=b[0]-.8+k*.27,fz=b[1]+((k%2)?.25:-.2);
         add(scene,Cy(.02,.02,.4,5),'#3e9b4f',fx,.35,fz);
         add(scene,Sp(.11),fc[(k+bi)%fc.length],fx,.6,fz);}
     });
     /* arbustos */
-    [[-6.5,9.3,.7],[7.6,9.3,.8],[-9.6,-9.3,.75],[10.6,-9.3,.7],[12.4,-1.8,.55],[-12.4,3.2,.6]].forEach(function(b){
+    [[-6.5,9.3,.7],[7.6,9.3,.8],[-9.6,-9.3,.75]].forEach(function(b){
       var g=new T.Group();g.position.set(b[0],0,b[1]);scene.add(g);
       add(g,Sp(b[2]),'#3f9a55',0,b[2]*.7,0).scale.set(1.3,.9,1.1);
       add(g,Sp(b[2]*.65),'#52b266',b[2]*.7,b[2]*.55,.15);
@@ -2212,19 +2214,16 @@ function initScene(){
     add(scene,Bx(25.6,.1,.08),'#f4efe6',0,.65,-9.7);add(scene,Bx(25.6,.1,.08),'#f4efe6',0,.3,-9.7);
     for(var b2=-9.4;b2<=9.5;b2+=2.1)add(scene,Bx(.14,.9,.14),'#f4efe6',-12.6,.45,b2);
     add(scene,Bx(.08,.1,19.2),'#f4efe6',-12.6,.65,0);add(scene,Bx(.08,.1,19.2),'#f4efe6',-12.6,.3,0);
-    /* buzón */
-    var mb=new T.Group();mb.position.set(12.3,0,-6.2);scene.add(mb);
-    add(mb,Cy(.05,.05,1.1,8),'#6b5442',0,.55,0);add(mb,Bx(.55,.38,.8),'#e5322d',0,1.25,0);add(mb,Bx(.04,.3,.04),'#ffd23f',.3,1.5,.2);
     /* alfombra bajo el escritorio */
     var rg=add(scene,Cy(3.3,3.3,.04,40),'#1b4d32',0,.02,.4);rg.scale.z=.8;rg.castShadow=false;
     /* nubes */
-    [[-18,11,-14],[10,11,-24],[-8,11,-26],[26,10,6]].forEach(function(c,ci){
+    [[10,11,-24],[-8,11,-26]].forEach(function(c,ci){
       var g=new T.Group();g.position.set(c[0],c[1],c[2]);g.userData.s=.4+ci*.07;scene.add(g);
       [[0,0,0,1.1],[1.1,-.15,.2,.85],[-1.1,-.2,-.1,.8],[.4,.35,0,.8]].forEach(function(p){var m=add(g,Sp(p[3]),'#ffffff',p[0],p[1],p[2],{roughness:1,transparent:true,opacity:.92});m.castShadow=false;m.receiveShadow=false});
       decoClouds.push(g);
     });
     /* mariposas */
-    [[-2.2,7.5,'#ffd23f'],[2.4,7.7,'#ff5c8a'],[12.3,5.2,'#ffffff']].forEach(function(c,i){
+    [[-9.8,9.2,'#ffd23f'],[12.3,5.2,'#ffffff']].forEach(function(c,i){
       var g=new T.Group();scene.add(g);
       var w1=add(g,Bx(.22,.02,.16),c[2],-.12,0,0),w2=add(g,Bx(.22,.02,.16),c[2],.12,0,0);w1.castShadow=w2.castShadow=false;
       g.userData={cx:c[0],cz:c[1],p:i*2.1,w1:w1,w2:w2};bflies.push(g);
@@ -2325,7 +2324,7 @@ function initScene(){
   for(var fi=0;fi<ffN;fi++){ffBase.push({x:(Math.random()-.5)*24,z:(Math.random()-.5)*18,y:.8+Math.random()*2.6,p:Math.random()*6.28,s:.3+Math.random()*.5})}
   ffGeo.setAttribute('position',new T.BufferAttribute(ffPos,3));
   var ffMat=new T.PointsMaterial({size:15,map:glowTex(),color:0xcfff9a,transparent:true,opacity:.8,blending:T.AdditiveBlending,depthWrite:false,sizeAttenuation:false});
-  var fireflies=new T.Points(ffGeo,ffMat);fireflies.frustumCulled=false;scene.add(fireflies);
+  var fireflies=new T.Points(ffGeo,ffMat);fireflies.frustumCulled=false;fireflies.visible=false;scene.add(fireflies);
   var birds=[];
   for(var bi=0;bi<3;bi++){
     var bg=new T.Group();scene.add(bg);
