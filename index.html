@@ -1409,6 +1409,20 @@ function macroCard(it){
     return '<div class="hb" data-tip="'+esc(r[0]+': '+num(r[1],1)+' de '+num(r[2])+' g')+'"><span class="hl">'+r[0]+'</span><div class="tr"><b style="width:'+Math.min(100,r[2]?r[1]/r[2]*100:0).toFixed(1)+'%;--c:'+r[3]+(r[1]<=0?';min-width:0;width:0':'')+'"></b></div><span class="hv" style="min-width:90px">'+num(r[1],1)+' / '+num(r[2])+' g</span></div>';
   }).join('')+'<p class="ts">Azúcares: '+num(Su,1)+' g'+(P+C+F+Su===0?' · añade gramos al registrar una comida para verlos aquí':'')+'</p></div>';
 }
+var FOODS=[];
+function foodLib(){
+  var m={};
+  S.comida.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0}).forEach(function(c){
+    var k=(c.name||'').trim().toLowerCase();if(!k)return;
+    var o=m[k]||{n:0};o.n++;o.name=c.name.trim();o.kcal=c.kcal;o.prot=c.prot;o.carbs=c.carbs;o.fat=c.fat;o.sugar=c.sugar;o.meal=c.meal;m[k]=o;
+  });
+  return Object.keys(m).map(function(k){return m[k]}).sort(function(a,b){return b.n-a.n||a.name.localeCompare(b.name)});
+}
+function foodBox(){
+  FOODS=foodLib();
+  if(!FOODS.length)return '<div class="card"><h3>Mis comidas guardadas</h3><p class="empty">Lo que registres se guarda aquí solo, para elegirlo la próxima vez con un toque.</p></div>';
+  return '<div class="card"><div class="bar"><h3 style="margin:0">Mis comidas guardadas</h3><input id="foodq" type="search" placeholder="Buscar…" aria-label="Buscar comida guardada" style="max-width:180px"></div><div class="chips" id="foodchips" style="margin-top:12px">'+FOODS.map(function(f,i){return '<button type="button" class="chip" data-act="cfill" data-i="'+i+'" data-q="'+esc(f.name.toLowerCase())+'">'+esc(f.name)+' · '+num(f.kcal)+' kcal</button>'}).join('')+'</div><p class="ts" style="margin:10px 0 0">Toca una para rellenar el formulario y pulsa Añadir. Ordenadas por las que más usas.</p></div>';
+}
 VIEWS.comida=function(){
   var day=ui.day||today(),it=S.comida.filter(function(c){return c.date===day});
   var kc=sum(it,function(c){return c.kcal}),p=sum(it,function(c){return c.prot||0}),ch=sum(it,function(c){return c.carbs||0}),f=sum(it,function(c){return c.fat||0});
@@ -1425,7 +1439,7 @@ VIEWS.comida=function(){
     fld('comida','fat','Grasas (g)','number',e&&e.fat!=null?e.fat:'','min="0" step="any" inputmode="decimal"')+
     fld('comida','sugar','Azúcares (g)','number',e&&e.sugar!=null?e.sugar:'','min="0" step="any" inputmode="decimal"')+
     '');
-  return '<div class="bar"><h2>Comida</h2><div class="nav"><button class="btn" data-act="day" data-d="-1" aria-label="Día anterior">←</button><strong>'+(day===today()?'Hoy':esc(fshort(day)))+'</strong><button class="btn" data-act="day" data-d="1" aria-label="Día siguiente">→</button>'+(day!==today()?'<button class="btn" data-act="day" data-d="0">Hoy</button>':'')+'</div></div>'+dsBox('comida')+form+
+  return '<div class="bar"><h2>Comida</h2><div class="nav"><button class="btn" data-act="day" data-d="-1" aria-label="Día anterior">←</button><strong>'+(day===today()?'Hoy':esc(fshort(day)))+'</strong><button class="btn" data-act="day" data-d="1" aria-label="Día siguiente">→</button>'+(day!==today()?'<button class="btn" data-act="day" data-d="0">Hoy</button>':'')+'</div></div>'+dsBox('comida')+foodBox()+form+
   '<div class="grid"><div class="card"><h3>Calorías del día</h3><p class="tv">'+num(kc)+'<small>/ '+num(S.set.kcal)+' kcal</small></p>'+meter(kc,S.set.kcal,kc>S.set.kcal*1.05?'var(--bad)':'var(--s2)')+'<p class="ts">'+(kc>S.set.kcal?pill('warn',num(kc-S.set.kcal)+' kcal por encima'):num(S.set.kcal-kc)+' kcal por tomar')+' · Proteína '+num(p)+' / '+num(S.set.prot)+' g</p><div style="margin-top:14px">'+stack+'</div></div>'+
   '<div class="card"><h3>Últimos 7 días</h3>'+kcalCols(day,7)+'</div></div>'+
   macroCard(it)+
@@ -1700,6 +1714,7 @@ document.addEventListener('click',function(e){
   else if(a==='gwent'){ui.sess.went=b.dataset.v==='1';ui.gmsg='';ui.del='';if(!ui.sess.went&&!S.gym.some(function(g){return g.date===ui.sess.date})){ui.sess.note='';ui.sess.tags=[];HANDLERS.gymday()}else render()}
   else if(a==='goalsreset'){delete S.set.goals;commit()}
   else if(a==='gtag'){toggleTag(b.dataset.v);ui.gmsg='';render()}
+  else if(a==='cfill'){var fd=FOODS[+b.dataset.i];if(fd){var set=function(id,v){var x=$('#f-comida-'+id);if(x)x.value=v==null?'':v};set('name',fd.name);set('kcal',fd.kcal);set('prot',fd.prot);set('carbs',fd.carbs);set('fat',fd.fat);set('sugar',fd.sugar);if(fd.meal)set('meal',fd.meal);var fm=$('#f-comida-name');if(fm){fm.scrollIntoView({block:'center',behavior:'smooth'});var ad=document.querySelector('form[data-form=comida] button[type=submit]');if(ad)ad.focus({preventScroll:true})}}}
   else if(a==='dsday'){var m=b.dataset.m,d=b.dataset.d;
     if(m==='gastos'){ui.date.gastos=d;ui.date.ingresos=d;['f-gastos-date','f-ingresos-date'].forEach(function(i){var x=$('#'+i);if(x)x.value=d});dsRefresh('gastos');var ci=$('#f-gastos-concept');if(ci)ci.focus()}
     else if(m==='comida'){ui.day=d;ui.del='';render()}
@@ -2439,6 +2454,7 @@ initDb();
 initScene();
 setDrawer(ui.tab!=='escritorio');
 renderHud();
+document.addEventListener('input',function(e){if(e.target.id!=='foodq')return;var q=e.target.value.trim().toLowerCase();document.querySelectorAll('#foodchips .chip').forEach(function(c){c.hidden=q&&c.dataset.q.indexOf(q)<0})});
 function radarLive(){var x=$('#radarbox');if(x)x.innerHTML=radarChart(true)}
 document.addEventListener('input',radarLive);document.addEventListener('change',radarLive);
 var dg=null;
