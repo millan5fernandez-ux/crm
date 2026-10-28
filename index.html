@@ -707,11 +707,6 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
 .tag span{display:none}.tag:hover span,.tag.on span{display:block}
 .tag{padding:5px 11px 5px 10px}
 
-#savedt{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:90;background:var(--good);color:#fff;font:700 14px var(--font-body);padding:11px 20px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.28);pointer-events:none;white-space:nowrap}
-#savedt.show{animation:savedin .25s cubic-bezier(.2,.8,.2,1) both}
-@keyframes savedin{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
-@media (max-width:860px){#savedt{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
-@media (min-width:861px){body.drawer-open #savedt{left:75%}}
 </style>
 <div id="app">
   <header id="top">
@@ -764,7 +759,6 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
   </aside>
 </div>
 <div id="tip" hidden></div>
-<div id="savedt" role="status" aria-live="polite" hidden>✓ Guardado</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
@@ -1837,10 +1831,17 @@ document.addEventListener('submit',function(e){
   var fd={};new FormData(form).forEach(function(v,k){fd[k]=v});
   var n0=nSaves;
   HANDLERS[form.dataset.form](fd);
-  if(nSaves>n0)savedToast();
+  if(nSaves>n0)savedPill(form.dataset.form);
 });
 var savedTimer=0;
-function savedToast(msg){var t=$('#savedt');if(!t)return;t.textContent='✓ '+(msg||'Guardado');t.hidden=false;t.classList.remove('show');void t.offsetWidth;t.classList.add('show');clearTimeout(savedTimer);savedTimer=setTimeout(function(){t.classList.remove('show');t.hidden=true},2200)}
+function savedPill(name){
+  var f=document.querySelector('form[data-form="'+name+'"]');if(!f)return;
+  var sb=f.querySelector('button[type=submit]'),fa=sb?sb.parentNode:f;
+  if(fa.querySelector('.pill.good[data-saved]'))return;
+  fa.querySelectorAll('.pill.good').forEach(function(x){x.remove()});
+  var p=document.createElement('span');p.className='pill good';p.dataset.saved='1';p.setAttribute('role','status');p.textContent='✓ Guardado';fa.appendChild(p);
+  clearTimeout(savedTimer);savedTimer=setTimeout(function(){if(p.parentNode)p.remove()},2600);
+}
 
 /* tooltip */
 var tip=$('#tip');
