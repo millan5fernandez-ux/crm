@@ -698,6 +698,11 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
 .gdrag{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border:2px solid var(--edge);padding:8px 14px;min-height:40px;display:inline-flex;align-items:center;background:var(--card);color:var(--ink);letter-spacing:.1em}
 .gi.dragging{outline:3px solid var(--accent);box-shadow:0 10px 30px rgba(0,0,0,.25);position:relative;z-index:5}
 .gdrag:active{cursor:grabbing}
+
+#side .setgear{margin-top:auto}
+#side .setgear:hover svg{transform:rotate(60deg)}
+#side .setgear svg{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+@media (max-width:860px){#side .setgear{margin-top:0}}
 </style>
 <div id="app">
   <header id="top">
@@ -706,7 +711,7 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
       <span class="logo-t"><strong>Millán CRM</strong><small id="hdate"></small></span>
     </a>
   </header>
-  <nav id="side" class="tabs" aria-label="Módulos"><p class="navh">Módulos</p><a class="tab" href="#escritorio" data-tab="escritorio" title="Escritorio"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Escritorio</span></a><a class="tab" href="#resumen" data-tab="resumen" title="Resumen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg><span>Resumen</span></a><a class="tab" href="#gastos" data-tab="gastos" title="Gastos"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M14.6 9.4c-.5-.9-1.4-1.4-2.6-1.4-1.5 0-2.6.8-2.6 2s1 1.6 2.6 2 2.6.8 2.6 2-1.1 2-2.6 2c-1.2 0-2.1-.5-2.6-1.4M12 6.5V8M12 16v1.5"/></svg><span>Gastos</span></a><a class="tab" href="#gym" data-tab="gym" title="Gym"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7v10M3.5 9.5v5M17.5 7v10M20.5 9.5v5M6.5 12h11"/></svg><span>Gym</span></a><a class="tab" href="#comida" data-tab="comida" title="Comida"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v7a2 2 0 0 0 2 2v9M7 3v5M11 3v5a2 2 0 0 1-2 2M17 21V3c-2 1.4-3 4-3 7s1 4 3 4"/></svg><span>Comida</span></a><a class="tab" href="#cuerpo" data-tab="cuerpo" title="Personal"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg><span>Personal</span></a><a class="tab" href="#metas" data-tab="metas" title="Calendario"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendario</span></a></nav>
+  <nav id="side" class="tabs" aria-label="Módulos"><p class="navh">Módulos</p><a class="tab" href="#escritorio" data-tab="escritorio" title="Escritorio"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span>Escritorio</span></a><a class="tab" href="#resumen" data-tab="resumen" title="Resumen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg><span>Resumen</span></a><a class="tab" href="#gastos" data-tab="gastos" title="Gastos"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M14.6 9.4c-.5-.9-1.4-1.4-2.6-1.4-1.5 0-2.6.8-2.6 2s1 1.6 2.6 2 2.6.8 2.6 2-1.1 2-2.6 2c-1.2 0-2.1-.5-2.6-1.4M12 6.5V8M12 16v1.5"/></svg><span>Gastos</span></a><a class="tab" href="#gym" data-tab="gym" title="Gym"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7v10M3.5 9.5v5M17.5 7v10M20.5 9.5v5M6.5 12h11"/></svg><span>Gym</span></a><a class="tab" href="#comida" data-tab="comida" title="Comida"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v7a2 2 0 0 0 2 2v9M7 3v5M11 3v5a2 2 0 0 1-2 2M17 21V3c-2 1.4-3 4-3 7s1 4 3 4"/></svg><span>Comida</span></a><a class="tab" href="#cuerpo" data-tab="cuerpo" title="Personal"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg><span>Personal</span></a><a class="tab" href="#metas" data-tab="metas" title="Calendario"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Calendario</span></a><a class="tab setgear" href="#ajustes" data-tab="ajustes" title="Ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Ajustes</span></a></nav>
   <div id="dash">
     <div class="dtop">
       <span class="crumb">// Hoy · <b id="hdate2"></b></span>
@@ -797,7 +802,7 @@ try{var _r=localStorage.getItem(SB.ls);if(_r)sbS=JSON.parse(_r)}catch(e){}
   else if(q.get('error_description'))sbNote='No se pudo confirmar el correo: '+q.get('error_description');
   try{history.replaceState(null,'',location.pathname+location.search+'#escritorio')}catch(e){}
 })();
-var TABS=['escritorio','resumen','gastos','gym','comida','cuerpo','metas'];
+var TABS=['escritorio','resumen','gastos','gym','comida','cuerpo','metas','ajustes'];
 var h0=(location.hash||'').slice(1);
 var ui={tab:TABS.indexOf(h0)>-1?h0:'escritorio',month:'',day:'',ex:'',q:'',cat:'',edit:null,del:'',date:{},reset:false,backup:'',anim:true,cal:'',sel:''};
 var lines={};
@@ -1479,6 +1484,23 @@ VIEWS.cuerpo=function(){
     wc.push({label:DOW(d),v:r.water||0,tip:fdate(d)+': '+(r.water!=null?num(r.water)+' ml':'sin dato'),color:'var(--s1)'});
     mc.push({label:DOW(d),v:r.mood||0,tip:fdate(d)+': '+(m?m.l:'sin dato'),color:m?m.c:'var(--s3)'});
   }
+  var legend='<div class="legend">'+MOODS.map(function(m){return '<span><span class="dot" style="--c:'+m.c+'"></span>'+m.l+'</span>'}).join('')+'</div>';
+  return '<div class="bar"><h2>Personal</h2></div>'+dsBox('cuerpo')+form+
+  '<div class="tiles">'+
+    tile('Peso actual',lw?num(lw.weight,1):'—','kg','',wsub)+
+    tile('Ánimo (7 días)',mo?esc(mo.l):'—','',m7.length?meter(ma,5,mo.c):'',m7.length?'Media de '+m7.length+' registros':'Aún sin registros')+
+    tile('Sueño medio',sl!=null?num(sl,1):'—','h',sl!=null?meter(sl,S.set.sleep,'var(--s3)'):'','Meta '+S.set.sleep+' h')+
+    tile('Agua hoy',wt!=null?num(wt):'—','ml',wt!=null?meter(wt,S.set.water,'var(--s1)'):'','Meta '+num(S.set.water)+' ml')+
+    (bmi!=null?tile('IMC',num(bmi,1),'','','Orientativo, con tu altura'):'')+
+  '</div>'+
+  '<div class="grid"><div class="card"><h3>Peso · 90 días</h3>'+weightLine(90,'cw')+'</div>'+
+  '<div class="card"><h3>Ánimo · 14 días</h3>'+cols(mc,{max:5,aria:'Estado de ánimo de los últimos 14 días'})+legend+'</div>'+
+  '<div class="card"><h3>Sueño · 14 días</h3>'+cols(sc,{goal:S.set.sleep,goalLabel:S.set.sleep+' h',aria:'Horas de sueño de los últimos 14 días'})+'</div>'+
+  '<div class="card"><h3>Agua · 14 días</h3>'+cols(wc,{goal:S.set.water,goalLabel:num(S.set.water)+' ml',aria:'Agua de los últimos 14 días'})+'</div></div>'+
+  '<div class="card"><h3>Todo lo registrado</h3><div id="list">'+LISTS.cuerpo()+'</div></div>';
+};
+VIEWS.ajustes=function(){
+  var pf=S.profile,s=S.set;
   var perfil='<form class="card" data-form="perfil" autocomplete="off"><h3>Mi perfil</h3><div class="fg">'+
     fld('perfil','name','Nombre','text',pf.name,'maxlength="30"','full')+
     fld('perfil','height','Altura (cm)','number',pf.height==null?'':pf.height,'min="100" max="250" step="any" inputmode="decimal"')+
@@ -1496,22 +1518,7 @@ VIEWS.cuerpo=function(){
   var gl='<form class="card" data-form="goals" autocomplete="off"><h3>Series semanales por músculo</h3><p class="ts" style="margin:0 0 10px">Rango objetivo de series por semana (sin contar el calentamiento). Si quieres una cifra fija, pon el mismo número en las dos casillas.</p><div class="fg">'+
     MAIN.map(function(m){return '<div class="f"><span>'+esc(m)+'</span><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input type="number" name="lo_'+esc(m)+'" aria-label="'+esc(m)+' mínimo" min="0" max="60" step="1" inputmode="numeric" value="'+GOALS[m][0]+'" required><input type="number" name="hi_'+esc(m)+'" aria-label="'+esc(m)+' máximo" min="0" max="60" step="1" inputmode="numeric" value="'+GOALS[m][1]+'" required></div></div>'}).join('')+
     '</div><p class="ts">Izquierda: mínimo · derecha: máximo.</p><div class="fa"><button class="btn primary" type="submit">Guardar series</button><button class="btn" type="button" data-act="goalsreset">Restablecer</button></div></form>';
-  var legend='<div class="legend">'+MOODS.map(function(m){return '<span><span class="dot" style="--c:'+m.c+'"></span>'+m.l+'</span>'}).join('')+'</div>';
-  return '<div class="bar"><h2>Personal</h2></div>'+dsBox('cuerpo')+form+
-  '<div class="tiles">'+
-    tile('Peso actual',lw?num(lw.weight,1):'—','kg','',wsub)+
-    tile('Ánimo (7 días)',mo?esc(mo.l):'—','',m7.length?meter(ma,5,mo.c):'',m7.length?'Media de '+m7.length+' registros':'Aún sin registros')+
-    tile('Sueño medio',sl!=null?num(sl,1):'—','h',sl!=null?meter(sl,S.set.sleep,'var(--s3)'):'','Meta '+S.set.sleep+' h')+
-    tile('Agua hoy',wt!=null?num(wt):'—','ml',wt!=null?meter(wt,S.set.water,'var(--s1)'):'','Meta '+num(S.set.water)+' ml')+
-    (bmi!=null?tile('IMC',num(bmi,1),'','','Orientativo, con tu altura'):'')+
-  '</div>'+
-  '<div class="grid"><div class="card"><h3>Peso · 90 días</h3>'+weightLine(90,'cw')+'</div>'+
-  '<div class="card"><h3>Ánimo · 14 días</h3>'+cols(mc,{max:5,aria:'Estado de ánimo de los últimos 14 días'})+legend+'</div>'+
-  '<div class="card"><h3>Sueño · 14 días</h3>'+cols(sc,{goal:S.set.sleep,goalLabel:S.set.sleep+' h',aria:'Horas de sueño de los últimos 14 días'})+'</div>'+
-  '<div class="card"><h3>Agua · 14 días</h3>'+cols(wc,{goal:S.set.water,goalLabel:num(S.set.water)+' ml',aria:'Agua de los últimos 14 días'})+'</div></div>'+
-  '<div class="grid">'+perfil+metas+'</div>'+gl+
-  '<div class="card"><h3>Todo lo registrado</h3><div id="list">'+LISTS.cuerpo()+'</div></div>'+
-  snapCard()+sbCard()+
+  return '<div class="bar"><h2>Ajustes</h2></div>'+sbCard()+snapCard()+'<div class="grid">'+perfil+metas+'</div>'+gl+
   '<div class="card"><h3>Datos</h3><p style="margin:0 0 10px;color:var(--ink2)">'+S.gastos.length+' gastos · '+S.gym.length+' ejercicios · '+S.comida.length+' comidas · '+S.cuerpo.length+' registros personales · '+S.plans.length+' planes</p><div class="fa" style="margin-top:0"><button class="btn" data-act="copy">Copiar copia de seguridad</button><button class="btn danger" data-act="reset">'+(ui.reset?'Confirmar: borrar todo':'Borrar todos los datos')+'</button>'+(ui.reset?'<button class="btn" data-act="reset-no">Cancelar</button>':'')+'</div>'+(ui.backup?'<p class="ts">Selecciona y copia este texto:</p><textarea readonly id="bk">'+esc(ui.backup)+'</textarea>':'')+'<h3 style="margin-top:16px">Importar copia de seguridad</h3><p class="ts" style="margin:0 0 8px">Pega aquí el texto copiado de otra versión de tu panel. Sustituye los datos actuales.</p><textarea id="imp" aria-label="Copia de seguridad a importar" placeholder="Pega aquí la copia"></textarea><div class="fa"><button class="btn primary" data-act="import">Importar</button></div>'+(ui.impmsg?'<p class="ts">'+esc(ui.impmsg)+'</p>':'')+'</div>';
 };
 LISTS.cuerpo=function(){
@@ -1824,7 +1831,7 @@ var rt=0;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTime
 
 /* ---------- escritorio 3D ---------- */
 var scene3d=null;
-var TITLES={resumen:'Resumen',gastos:'Gastos',gym:'Gym',comida:'Comida',cuerpo:'Personal',metas:'Calendario'};
+var TITLES={resumen:'Resumen',gastos:'Gastos',gym:'Gym',comida:'Comida',cuerpo:'Personal',metas:'Calendario',ajustes:'Ajustes'};
 var NAMES={resumen:'Mi escritorio',gastos:'Gastos',gym:'Gym',comida:'Comida',cuerpo:'Personal',metas:'Calendario'};
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function setDrawer(open){
