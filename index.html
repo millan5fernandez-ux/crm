@@ -708,6 +708,17 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
 .tag span{display:none}.tag:hover span,.tag.on span{display:block}
 .tag{padding:5px 11px 5px 10px}
 
+/* panel de datos del gym */
+.gpanel{background:var(--card);border:1px solid var(--edge);padding:14px;margin:0 0 14px}
+.gpanel>.bar{margin-bottom:12px}
+.gpanel .card{box-shadow:none}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;align-items:start;margin:12px 0}
+.gpbody>.card{margin:0}
+.gpbody .tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0}
+.gpbody .tile{padding:10px}
+.gpbody .tile .tv{font-size:22px}
+.gpbody .tile .tl,.gpbody .tile .ts{font-size:9.5px}
+@media (max-width:520px){.gpbody .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <div id="app">
   <header id="top">
@@ -1387,18 +1398,23 @@ VIEWS.gym=function(){
   var title=gw===0?'Esta semana':'Semana del '+fshort(ws);
   return '<div class="bar"><h2>Gym</h2><div class="nav"><button class="btn" data-act="gweek" data-d="-1" aria-label="Semana anterior">←</button><strong>'+esc(title)+'</strong><button class="btn" data-act="gweek" data-d="1" aria-label="Semana siguiente"'+(gw>=0?' disabled':'')+'>→</button>'+(gw!==0?'<button class="btn" data-act="gweek0">Hoy</button>':'')+'</div></div>'+
   '<div class="card"><h3>'+esc(fshort(ws))+' – '+esc(fshort(we))+' · pulsa un día para registrarlo</h3><div class="gstrip">'+strip+'</div></div>'+
-  builderHtml()+
+  '<div class="gpanel"><div class="bar"><h3 style="margin:0">Esta semana · datos</h3><div class="fa" style="margin:0"><button class="btn" type="button" data-act="gscroll">Registrar ↓</button><button class="btn" type="button" data-act="gstats" aria-expanded="'+(ui.gstats!==false)+'">'+(ui.gstats!==false?'Ocultar':'Mostrar')+'</button></div></div>'+
+  (ui.gstats!==false?'<div class="gpbody">'+
   '<div class="tiles">'+
     tile('Sesiones',String(went),'/ 7 días','','Días que has ido')+
     tile('Series',num(sets),'','','Sin calentamiento · solo músculo principal')+
     tile('Músculos en meta',hit+' / '+MAIN.length,'',meter(hit,MAIN.length,'var(--s3)'),'Series mínimas por músculo')+
     tile('Volumen',num(vol),'kg','','Series × reps × kg')+
   '</div>'+
+  '<div class="ggrid">'+
   '<div class="card"><h3>Equilibrio muscular · semana actual vs anterior</h3><div id="radarbox">'+radarChart(true)+'</div></div>'+
   '<div class="card"><h3>Series por músculo · meta semanal</h3>'+rows+'</div>'+
-  '<div class="card"><h3>Semanas anteriores · series por músculo</h3>'+tbl+'<p class="ts">✓ indica que llegaste al mínimo: '+MAIN.map(function(m){return m+' '+gtxt(m)}).join(' · ')+'. <button class="ic" data-go="ajustes">Editar rangos</button></p></div>'+
+  '</div>'+
   '<div class="card"><div class="bar"><h3 style="margin:0">Progreso</h3>'+(exs.length?'<select id="exsel" aria-label="Ejercicio" style="max-width:220px">'+exs.map(function(x){return '<option'+(x===ex?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select>':'')+'</div>'+
     (exs.length?lineBox('gx',{pts:pts,aria:'Progreso de '+ex,color:'var(--s2)'})+'<p class="ts">'+(best!=null?'Mejor 1RM estimado: <strong>'+num(best,1)+' kg</strong>':'')+'</p>':'<p class="empty">Registra una sesión para ver el progreso.</p>')+'</div>'+
+  '</div>':'')+'</div>'+
+  '<div id="gbuilder">'+builderHtml()+'</div>'+
+  '<div class="card"><h3>Semanas anteriores · series por músculo</h3>'+tbl+'<p class="ts">✓ indica que llegaste al mínimo: '+MAIN.map(function(m){return m+' '+gtxt(m)}).join(' · ')+'. <button class="ic" data-go="ajustes">Editar rangos</button></p></div>'+
   '<div class="card"><div class="bar"><h3 style="margin:0">Historial</h3>'+search('Buscar ejercicio o rutina')+'</div><div id="list">'+LISTS.gym()+'</div></div>';
 };
 LISTS.gym=function(){
@@ -1704,6 +1720,8 @@ document.addEventListener('click',function(e){
   else if(a==='sbin'){sbAuth('in')}
   else if(a==='sbup'){sbAuth('up')}
   else if(a==='sbout'){sbStore(null);dbDoc=null;try{localStorage.removeItem('bitacora-sb-linked')}catch(e){}sbNote='';setSync('Datos guardados solo en este dispositivo');render()}
+  else if(a==='gstats'){ui.gstats=(ui.gstats===false);render()}
+  else if(a==='gscroll'){var gb=$('#gbuilder');if(gb)gb.scrollIntoView({behavior:'smooth',block:'start'})}
   else if(a==='hvgo'){hevyGo()}
   else if(a==='hvno'){ui.hv=null;ui.hvmsg='';render()}
   else if(a==='sbsync'){sbSay('Sincronizando…');sbPull().then(function(){flush();sbSay('Sincronizado')})}
