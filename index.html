@@ -1,4 +1,5 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#ff3b3b"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Millán CRM"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>Millán CRM</title>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#ff3b3b"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Millán CRM"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Millán CRM</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23ff3b3b%22/%3E%3Cpath d=%22M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z%22 fill=%22%230b0b0b%22/%3E%3Crect x=%2225%22 y=%223%22 width=%224%22 height=%224%22 fill=%22%230b0b0b%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -1537,7 +1538,7 @@ VIEWS.ajustes=function(){
   var gl='<form class="card" data-form="goals" autocomplete="off"><h3>Series semanales por músculo</h3><p class="ts" style="margin:0 0 10px">Rango objetivo de series por semana (sin contar el calentamiento). Si quieres una cifra fija, pon el mismo número en las dos casillas.</p><div class="fg">'+
     MAIN.map(function(m){return '<div class="f"><span>'+esc(m)+'</span><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input type="number" name="lo_'+esc(m)+'" aria-label="'+esc(m)+' mínimo" min="0" max="60" step="1" inputmode="numeric" value="'+GOALS[m][0]+'" required><input type="number" name="hi_'+esc(m)+'" aria-label="'+esc(m)+' máximo" min="0" max="60" step="1" inputmode="numeric" value="'+GOALS[m][1]+'" required></div></div>'}).join('')+
     '</div><p class="ts">Izquierda: mínimo · derecha: máximo.</p><div class="fa"><button class="btn primary" type="submit">Guardar series</button><button class="btn" type="button" data-act="goalsreset">Restablecer</button></div></form>';
-  return '<div class="bar"><h2>Ajustes</h2></div>'+sbCard()+snapCard()+'<div class="grid">'+perfil+metas+'</div>'+gl+
+  return '<div class="bar"><h2>Ajustes</h2></div>'+sbCard()+snapCard()+hevyCard()+'<div class="grid">'+perfil+metas+'</div>'+gl+
   '<div class="card"><h3>Datos</h3><p style="margin:0 0 10px;color:var(--ink2)">'+S.gastos.length+' gastos · '+S.gym.length+' ejercicios · '+S.comida.length+' comidas · '+S.cuerpo.length+' registros personales · '+S.plans.length+' planes</p><div class="fa" style="margin-top:0"><button class="btn" data-act="copy">Copiar copia de seguridad</button><button class="btn danger" data-act="reset">'+(ui.reset?'Confirmar: borrar todo':'Borrar todos los datos')+'</button>'+(ui.reset?'<button class="btn" data-act="reset-no">Cancelar</button>':'')+'</div>'+(ui.backup?'<p class="ts">Selecciona y copia este texto:</p><textarea readonly id="bk">'+esc(ui.backup)+'</textarea>':'')+'<h3 style="margin-top:16px">Importar copia de seguridad</h3><p class="ts" style="margin:0 0 8px">Pega aquí el texto copiado de otra versión de tu panel. Sustituye los datos actuales.</p><textarea id="imp" aria-label="Copia de seguridad a importar" placeholder="Pega aquí la copia"></textarea><div class="fa"><button class="btn primary" data-act="import">Importar</button></div>'+(ui.impmsg?'<p class="ts">'+esc(ui.impmsg)+'</p>':'')+'</div>';
 };
 LISTS.cuerpo=function(){
@@ -1692,6 +1693,8 @@ document.addEventListener('click',function(e){
   else if(a==='sbin'){sbAuth('in')}
   else if(a==='sbup'){sbAuth('up')}
   else if(a==='sbout'){sbStore(null);dbDoc=null;try{localStorage.removeItem('bitacora-sb-linked')}catch(e){}sbNote='';setSync('Datos guardados solo en este dispositivo');render()}
+  else if(a==='hvgo'){hevyGo()}
+  else if(a==='hvno'){ui.hv=null;ui.hvmsg='';render()}
   else if(a==='sbsync'){sbSay('Sincronizando…');sbPull().then(function(){flush();sbSay('Sincronizado')})}
   else if(a==='clear-example'){snap('antes de borrar ejemplos');S.example=false;S.gastos=[];S.ingresos=[];S.gym=[];S.comida=[];S.cuerpo=[];S.plans=[];S.gymdays=[];commit()}
   else if(a==='import'){
@@ -2485,7 +2488,110 @@ function end(){if(!dg)return;var c=dg.card;c.classList.remove('dragging');dg=nul
  if(neu.length===its.length&&neu.some(function(x,i){return x!==its[i]})){ui.sess.items=neu;render()}}
 document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end);
 
+
+/* ===== Importar desde Hevy (CSV) ===== */
+var MUS=['Pecho','Espalda','Hombro','Bíceps','Tríceps','Cuádriceps','Isquios','Glúteo','Gemelo','Core'];
+var HV_RULES=[
+ ['Isquios',/leg curl|hamstring|romanian|rumano|stiff|good morning|buenos d|curl femoral|femoral|rdl/],
+ ['Gemelo',/calf|gemelo|soleo|sóleo/],
+ ['Glúteo',/hip thrust|glute|glúte|bridge|puente|kickback.*(cable|polea)|abduc|patada de gl/],
+ ['Cuádriceps',/squat|sentadilla|leg press|prensa|lunge|zancada|hack|leg extension|extensión de cuád|extension de cuad|step.?up|cuádriceps|sissy/],
+ ['Core',/crunch|plank|plancha|sit.?up|leg raise|elevación de piernas|elevacion de piernas|ab wheel|rueda abd|russian|abdominal|\bcore\b|woodchop|hanging knee|toes to bar/],
+ ['Tríceps',/tricep|tríceps|pushdown|skull|press franc|francés|frances|close.?grip bench|press cerrado|jm press|overhead.*extension|extensión sobre|dips? \(tri|bench dip|fondos en banco|kickback|patada de tr/],
+ ['Bíceps',/bicep|bíceps|curl|hammer|martillo|preacher|predicador/],
+ ['Hombro',/shoulder|hombro|overhead press|military|militar|lateral raise|elevaciones lat|front raise|elevaciones front|rear delt|reverse fly|pájaros|pajaros|arnold|upright row|remo al ment|face pull.*(delt)|delt|\bohp\b/],
+ ['Espalda',/row|remo|pull.?up|chin.?up|dominad|pulldown|jalón|jalon|deadlift|peso muerto|shrug|encogim|face pull|pullover|back extension|hiperext|lat |trap/],
+ ['Pecho',/bench|banca|chest|pecho|pec deck|fly|apertura|cruce|push.?up|flexion|flexión|dip|fondos|incline press|press inclinado|decline/]
+];
+function hvGuess(n){var t=(n||'').toLowerCase();for(var i=0;i<HV_RULES.length;i++)if(HV_RULES[i][1].test(t))return HV_RULES[i][0];return ''}
+function csvParse(txt){
+  txt=txt.replace(/^﻿/,'');
+  var first=txt.split(/\r?\n/,1)[0],sep=(first.split(';').length>first.split(',').length)?';':',';
+  var rows=[],row=[],cur='',q=false,i=0,c;
+  for(;i<txt.length;i++){c=txt[i];
+    if(q){if(c==='"'){if(txt[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
+    else if(c==='"')q=true;
+    else if(c===sep){row.push(cur);cur=''}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&txt[i+1]==='\n')i++;row.push(cur);cur='';if(row.length>1||row[0]!=='')rows.push(row);row=[]}
+    else cur+=c}
+  if(cur!==''||row.length){row.push(cur);rows.push(row)}
+  return rows;
+}
+var HV_MES={ene:1,jan:1,feb:2,mar:3,abr:4,apr:4,may:5,jun:6,jul:7,ago:8,aug:8,sep:9,set:9,oct:10,nov:11,dic:12,dec:12};
+function hvDate(v){
+  v=(v||'').trim();var m;
+  if((m=v.match(/^(\d{4})-(\d{2})-(\d{2})/)))return m[1]+'-'+m[2]+'-'+m[3];
+  if((m=v.match(/^(\d{1,2})\s+([A-Za-zñÑ]+)\.?,?\s+(\d{4})/))){var mo=HV_MES[m[2].slice(0,3).toLowerCase()];if(mo)return m[3]+'-'+('0'+mo).slice(-2)+'-'+('0'+m[1]).slice(-2)}
+  if((m=v.match(/^([A-Za-z]{3})[a-z]*\s+(\d{1,2}),?\s+(\d{4})/))){var mo2=HV_MES[m[1].toLowerCase()];if(mo2)return m[3]+'-'+('0'+mo2).slice(-2)+'-'+('0'+m[2]).slice(-2)}
+  if((m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/)))return m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2);
+  return '';
+}
+function hvParse(txt){
+  var R=csvParse(txt);if(R.length<2)throw new Error('vacío');
+  var H=R[0].map(function(h){return h.trim().toLowerCase()}),ix=function(n){return H.indexOf(n)};
+  var iT=ix('title'),iS=ix('start_time'),iE=ix('exercise_title'),iY=ix('set_type'),iW=ix('weight_kg'),iR=ix('reps');
+  if(iS<0||iE<0||iR<0||iW<0)throw new Error('columnas');
+  var days={},skipped=0,sets=0;
+  R.slice(1).forEach(function(r){
+    var d=hvDate(r[iS]);if(!d||!r[iE])return;
+    var reps=fnum(r[iR])||0,kg=fnum(r[iW])||0;
+    if(!(reps>0||kg>0)){skipped++;return}
+    var D=days[d]||(days[d]={date:d,titles:[],ex:[],byName:{}});
+    var tt=iT>=0?(r[iT]||'').trim():'';if(tt&&D.titles.indexOf(tt)<0)D.titles.push(tt);
+    var name=r[iE].trim(),E=D.byName[name];
+    if(!E){E={name:name,rows:[]};D.byName[name]=E;D.ex.push(E)}
+    var ty=(iY>=0?r[iY]:'').trim().toLowerCase();
+    E.rows.push({r:Math.round(reps),k:kg,t:ty==='warmup'?'w':ty==='failure'?'f':'n'});sets++;
+  });
+  var list=Object.keys(days).sort().map(function(k){return days[k]}),names={};
+  list.forEach(function(D){D.ex.forEach(function(e){names[e.name]=(names[e.name]||0)+1})});
+  if(!list.length)throw new Error('sin datos');
+  var map={};Object.keys(names).forEach(function(n){var known='';S.gym.forEach(function(g){if(!known&&g.exercise.toLowerCase()===n.toLowerCase())known=g.muscle});map[n]=known||hvGuess(n)});
+  return {days:list,map:map,names:names,skipped:skipped,sets:sets,over:false};
+}
+function hevyCard(){
+  var h=ui.hv,body='';
+  if(h){
+    var nm=Object.keys(h.names).sort(function(a,b){return (h.map[a]?1:0)-(h.map[b]?1:0)||a.localeCompare(b)});
+    var exist=h.days.filter(function(D){return S.gymdays.some(function(g){return g.date===D.date})||S.gym.some(function(g){return g.date===D.date})}).length;
+    var miss=nm.filter(function(n){return !h.map[n]}).length;
+    body='<p style="margin:10px 0"><b>'+h.days.length+' entrenamientos</b> · '+nm.length+' ejercicios · '+h.sets+' series ('+h.days[0].date+' → '+h.days[h.days.length-1].date+')'+(h.skipped?' · '+h.skipped+' series sin peso ni repeticiones omitidas':'')+'</p>'+
+    '<p class="ts" style="margin:0 0 8px">Revisa el músculo de cada ejercicio'+(miss?' (<b>'+miss+' sin asignar</b>: ponlos o se omitirán)':'')+':</p><div id="hvmap" style="max-height:300px;overflow:auto;border:2px solid var(--line);padding:6px">'+
+    nm.map(function(n){return '<div style="display:grid;grid-template-columns:1fr 130px;gap:8px;align-items:center;padding:3px 0"><span>'+esc(n)+' <span class="ts">×'+h.names[n]+'</span></span><select class="hvsel" data-n="'+esc(n)+'" aria-label="Músculo de '+esc(n)+'"><option value="">— omitir —</option>'+MUS.map(function(m){return '<option'+(h.map[n]===m?' selected':'')+'>'+m+'</option>'}).join('')+'</select></div>'}).join('')+'</div>'+
+    (exist?'<label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="hvover"'+(h.over?' checked':'')+'> Sobrescribir los '+exist+' días que ya tienen datos (si no, se saltan)</label>':'')+
+    '<div class="fa"><button class="btn primary" data-act="hvgo">Importar</button><button class="btn" data-act="hvno">Cancelar</button></div>';
+  }
+  return '<div class="card"><h3>Importar desde Hevy</h3><p style="margin:0 0 10px;color:var(--ink2)">En Hevy: Perfil → Ajustes → Exportar y borrar datos → Exportar datos. Sube aquí el CSV (workouts.csv).</p>'+
+    '<div class="fa" style="margin-top:0"><input type="file" id="hvfile" accept=".csv,text/csv" aria-label="Archivo CSV de Hevy"></div>'+body+(ui.hvmsg?'<p class="ts" role="status">'+esc(ui.hvmsg)+'</p>':'')+'</div>';
+}
+function hevyGo(){
+  var h=ui.hv;if(!h)return;snap('antes de importar Hevy');
+  var nd=0,sk=0,ne=0;
+  h.days.forEach(function(D){
+    var has=S.gymdays.some(function(g){return g.date===D.date})||S.gym.some(function(g){return g.date===D.date});
+    if(has&&!h.over){sk++;return}
+    var items=D.ex.filter(function(e){return h.map[e.name]});
+    if(!items.length)return;
+    S.gymdays=S.gymdays.filter(function(g){return g.date!==D.date});S.gym=S.gym.filter(function(g){return g.date!==D.date});
+    var tags=D.titles.filter(function(t){return GTAGS.some(function(x){return x.toLowerCase()===t.toLowerCase()})}).map(function(t){return GTAGS.filter(function(x){return x.toLowerCase()===t.toLowerCase()})[0]});
+    S.gymdays.push({id:uid8(),date:D.date,went:true,routine:tags,note:D.titles.join(' + ').slice(0,140)});
+    items.forEach(function(e){
+      var rows=e.rows,wk=rows.filter(function(x){return x.t!=='w'}),pool=wk.length?wk:rows;
+      S.gym.push({id:uid8(),date:D.date,exercise:e.name.slice(0,60),muscle:h.map[e.name],sets:rows.length,reps:Math.round(pool.reduce(function(a,x){return a+x.r},0)/pool.length),kg:pool.reduce(function(m,x){return Math.max(m,x.k)},0),rows:rows});ne++;
+    });nd++;
+  });
+  ui.hv=null;ui.hvmsg='Importado de Hevy: '+nd+' entrenamientos nuevos ('+ne+' ejercicios)'+(sk?' · '+sk+' días saltados porque ya tenían datos':'')+'.';
+  commit();
+}
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.id==='hvfile'&&t.files&&t.files[0]){
+    var fr=new FileReader();fr.onload=function(){try{ui.hv=hvParse(String(fr.result));ui.hvmsg=''}catch(err){ui.hv=null;ui.hvmsg='No se pudo leer el CSV: no parece una exportación de Hevy ('+err.message+').'}render()};fr.readAsText(t.files[0]);
+  }else if(t.classList&&t.classList.contains('hvsel')&&ui.hv){ui.hv.map[t.dataset.n]=t.value}
+  else if(t.id==='hvover'&&ui.hv){ui.hv.over=t.checked}
+});
 })();
 
 </script>
+
 </body></html>
