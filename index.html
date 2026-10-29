@@ -791,7 +791,18 @@ var catColor=function(k){var c=CATS.filter(function(x){return x.k===k})[0];retur
 
 var EMPTY=function(){return {v:1,rev:0,example:false,set:{kcal:2400,prot:150,carbs:300,fat:70,water:2500,sets:12,sleep:8},gastos:[],ingresos:[],gym:[],comida:[],cuerpo:[],plans:[],gymdays:[],routines:[],profile:{name:'',height:null,goalWeight:null}}};
 var LS='bitacora-v1';
-function adopt(d){var e=EMPTY(),ds=e.set;S=Object.assign(e,d);S.set=Object.assign(ds,d.set||{});S.profile=Object.assign(EMPTY().profile,d.profile||{});if(!Array.isArray(S.plans))S.plans=[];if(!Array.isArray(S.ingresos))S.ingresos=[];if(S.set){delete S.set.budget;delete S.set.fiber}if(!Array.isArray(S.gymdays))S.gymdays=[];if(!Array.isArray(S.routines))S.routines=[];}
+/* nombres de ejercicios y rutinas en español (Hevy los exporta en inglés) */
+var ES_EX={
+'Behind the Back Curl (Cable)':'Curl por detrás de la espalda (polea)','Bicep Curl (Dumbbell)':'Curl con mancuernas','Biceps Curl (Dumbbell)':'Curl con mancuernas','Cable Fly Crossovers':'Cruces en polea','Chest Fly (Machine)':'Pec deck','Hammer Curl (Dumbbell)':'Curl martillo','Incline Bench Press (Dumbbell)':'Press inclinado con mancuernas','Incline Chest Press (Machine)':'Press inclinado en máquina','Iso-Lateral Row (Machine)':'Remo unilateral en máquina','Lat Pulldown (Cable)':'Jalón al pecho','Overhead Triceps Extension (Cable)':'Extensión sobre la cabeza','Preacher Curl (Machine)':'Curl predicador','Press Plano en Máquina':'Press en máquina','Seated Cable Row - Bar Grip':'Remo en polea baja','Seated Row (Machine)':'Remo en máquina','Shoulder Press (Machine Plates)':'Press en máquina de hombro','Single Arm Lateral Raise (Cable)':'Elevaciones laterales en polea','Single Arm Triceps Pushdown (Cable)':'Extensión en polea a una mano','Straight Arm Lat Pulldown (Cable)':'Pullover en polea','Triceps Extension (Cable)':'Extensión en polea','Triceps Pushdown':'Jalón de tríceps en polea',
+'Bench Press (Barbell)':'Press banca','Incline Bench Press (Barbell)':'Press banca inclinado','Decline Bench Press (Barbell)':'Press banca declinado','Bench Press (Dumbbell)':'Press con mancuernas','Chest Fly (Dumbbell)':'Aperturas con mancuernas','Push Up':'Flexiones','Chest Dip':'Fondos en paralelas','Pull Up':'Dominadas','Chin Up':'Dominadas supinas','Bent Over Row (Barbell)':'Remo con barra','Dumbbell Row':'Remo con mancuerna','One Arm Dumbbell Row':'Remo con mancuerna','T Bar Row':'Remo en T','Deadlift (Barbell)':'Peso muerto','Romanian Deadlift (Barbell)':'Peso muerto rumano','Face Pull (Cable)':'Face pull','Shrug (Dumbbell)':'Encogimientos con mancuernas','Overhead Press (Barbell)':'Press militar','Shoulder Press (Dumbbell)':'Press con mancuernas sentado','Lateral Raise (Dumbbell)':'Elevaciones laterales','Front Raise (Dumbbell)':'Elevaciones frontales','Rear Delt Reverse Fly (Dumbbell)':'Pájaros (deltoides posterior)','Rear Delt Reverse Fly (Machine)':'Pájaros en máquina','Bicep Curl (Barbell)':'Curl con barra','EZ Bar Biceps Curl':'Curl con barra Z','Concentration Curl':'Curl concentrado','Skullcrusher (Barbell)':'Press francés','Skullcrusher (Dumbbell)':'Press francés con mancuernas','Triceps Dip':'Fondos en paralelas','Bench Dip':'Fondos en banco','Close Grip Bench Press (Barbell)':'Press cerrado','Triceps Kickback (Dumbbell)':'Patada de tríceps','Squat (Barbell)':'Sentadilla','Front Squat (Barbell)':'Sentadilla frontal','Leg Press (Machine)':'Prensa','Leg Extension (Machine)':'Extensión de cuádriceps','Lunge (Dumbbell)':'Zancadas','Bulgarian Split Squat':'Sentadilla búlgara','Hack Squat (Machine)':'Hack squat','Lying Leg Curl (Machine)':'Curl femoral tumbado','Seated Leg Curl (Machine)':'Curl femoral sentado','Good Morning (Barbell)':'Buenos días','Hip Thrust (Barbell)':'Hip thrust','Glute Kickback (Machine)':'Patada de glúteo en polea','Hip Abduction (Machine)':'Abducción en máquina','Standing Calf Raise (Machine)':'Gemelo de pie','Seated Calf Raise (Machine)':'Gemelo sentado','Calf Press (Machine)':'Gemelo en prensa','Plank':'Plancha','Crunch':'Crunch abdominal','Cable Crunch':'Crunch en polea','Hanging Leg Raise':'Elevación de piernas','Ab Wheel':'Rueda abdominal'
+};
+var ES_TAG={'Upper':'Torso','Lower':'Pierna'};
+function esMigrate(){
+  S.gym.forEach(function(g){var n=ES_EX[g.exercise];if(n)g.exercise=n});
+  (S.routines||[]).forEach(function(r){if(ES_TAG[r.name])r.name=ES_TAG[r.name];(r.items||[]).forEach(function(x){var n=ES_EX[x.exercise];if(n)x.exercise=n})});
+  (S.gymdays||[]).forEach(function(d){if(d.routine)d.routine=d.routine.map(function(t){return ES_TAG[t]||t})});
+}
+function adopt(d){var e=EMPTY(),ds=e.set;S=Object.assign(e,d);S.set=Object.assign(ds,d.set||{});S.profile=Object.assign(EMPTY().profile,d.profile||{});if(!Array.isArray(S.plans))S.plans=[];if(!Array.isArray(S.ingresos))S.ingresos=[];if(S.set){delete S.set.budget;delete S.set.fiber}if(!Array.isArray(S.gymdays))S.gymdays=[];if(!Array.isArray(S.routines))S.routines=[];esMigrate();}
 var S=EMPTY();
 try{var raw=localStorage.getItem(LS);if(raw){var o=JSON.parse(raw);if(o&&o.v===1)adopt(o)}}catch(e){}
 
@@ -1191,8 +1202,8 @@ LISTS.gastos=function(){
 
 /* Gym */
 var T_PHB='Pecho, Hombro y Bíceps',T_TE='Tríceps y Espalda';
-var GTAGS=[T_PHB,T_TE,'Upper','Lower'];
-var TSHORT={};TSHORT[T_PHB]='P·H·B';TSHORT[T_TE]='T·E';TSHORT.Upper='Upper';TSHORT.Lower='Lower';
+var GTAGS=[T_PHB,T_TE,'Torso','Pierna'];
+var TSHORT={};TSHORT[T_PHB]='P·H·B';TSHORT[T_TE]='T·E';TSHORT.Torso='Torso';TSHORT.Pierna='Pierna';
 var GDEF={'Pecho':[12,15],'Espalda':[10,13],'Hombro':[6,6],'Bíceps':[10,10],'Tríceps':[9,9]};
 var GOALS={};
 function syncGoals(){var g=(S.set&&S.set.goals)||{};MAIN.forEach(function(m){var x=g[m],d=GDEF[m];GOALS[m]=(x&&x.length===2&&x[0]>=0&&x[1]>=x[0])?[+x[0],+x[1]]:d.slice()})}
@@ -1205,8 +1216,8 @@ function gmig(r){var o=[];(r||[]).forEach(function(t){var n=t;if(t==='Pecho'||t=
 var TPL={};
 TPL[T_PHB]=[['Press banca','Pecho',4],['Press inclinado con mancuernas','Pecho',3],['Aperturas en polea','Pecho',3],['Press militar','Hombro',3],['Elevaciones laterales','Hombro',3],['Curl con barra','Bíceps',3],['Curl martillo','Bíceps',3]];
 TPL[T_TE]=[['Dominadas','Espalda',4],['Remo con barra','Espalda',3],['Jalón al pecho','Espalda',3],['Press francés','Tríceps',3],['Extensión en polea','Tríceps',3]];
-TPL.Upper=[['Press banca','Pecho',3],['Remo con barra','Espalda',3],['Press militar','Hombro',3],['Curl con barra','Bíceps',2],['Extensión en polea','Tríceps',2]];
-TPL.Lower=[['Sentadilla','Cuádriceps',4],['Peso muerto rumano','Isquios',3],['Prensa','Cuádriceps',3],['Hip thrust','Glúteo',3],['Gemelo en prensa','Gemelo',4]];
+TPL.Torso=[['Press banca','Pecho',3],['Remo con barra','Espalda',3],['Press militar','Hombro',3],['Curl con barra','Bíceps',2],['Extensión en polea','Tríceps',2]];
+TPL.Pierna=[['Sentadilla','Cuádriceps',4],['Peso muerto rumano','Isquios',3],['Prensa','Cuádriceps',3],['Hip thrust','Glúteo',3],['Gemelo en prensa','Gemelo',4]];
 var CATALOG={
   'Pecho':['Press banca','Press banca inclinado','Press banca declinado','Press inclinado con mancuernas','Press con mancuernas','Aperturas con mancuernas','Aperturas en polea','Cruces en polea','Pec deck','Press en máquina','Fondos en paralelas','Flexiones'],
   'Espalda':['Dominadas','Jalón al pecho','Jalón agarre cerrado','Remo con barra','Remo con mancuerna','Remo en polea baja','Remo en máquina','Remo en T','Pullover en polea','Peso muerto','Face pull'],
@@ -2501,7 +2512,7 @@ var HV_RULES=[
  ['Bíceps',/bicep|bíceps|curl|hammer|martillo|preacher|predicador/],
  ['Hombro',/shoulder|hombro|overhead press|military|militar|lateral raise|elevaciones lat|front raise|elevaciones front|rear delt|reverse fly|pájaros|pajaros|arnold|upright row|remo al ment|face pull.*(delt)|delt|\bohp\b/],
  ['Espalda',/row|remo|pull.?up|chin.?up|dominad|pulldown|jalón|jalon|deadlift|peso muerto|shrug|encogim|face pull|pullover|back extension|hiperext|lat |trap/],
- ['Pecho',/bench|banca|chest|pecho|pec deck|fly|apertura|cruce|push.?up|flexion|flexión|dip|fondos|incline press|press inclinado|decline/]
+ ['Pecho',/bench|banca|chest|pecho|pec deck|fly|apertura|cruce|push.?up|flexion|flexión|dip|fondos|incline press|press inclinado|decline|press plano|press de pecho|chest press/]
 ];
 function hvGuess(n){var t=(n||'').toLowerCase();for(var i=0;i<HV_RULES.length;i++)if(HV_RULES[i][1].test(t))return HV_RULES[i][0];return ''}
 function csvParse(txt){
@@ -2526,19 +2537,20 @@ function hvDate(v){
   if((m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/)))return m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2);
   return '';
 }
+function esEx(n){return ES_EX[n]||n}
 function hvParse(txt){
   var R=csvParse(txt);if(R.length<2)throw new Error('vacío');
   var H=R[0].map(function(h){return h.trim().toLowerCase()}),ix=function(n){return H.indexOf(n)};
   var iT=ix('title'),iS=ix('start_time'),iE=ix('exercise_title'),iY=ix('set_type'),iW=ix('weight_kg'),iR=ix('reps');
   if(iS<0||iE<0||iR<0||iW<0)throw new Error('columnas');
-  var days={},skipped=0,sets=0;
+  var days={},skipped=0,sets=0,origOf={};
   R.slice(1).forEach(function(r){
     var d=hvDate(r[iS]);if(!d||!r[iE])return;
     var reps=fnum(r[iR])||0,kg=fnum(r[iW])||0;
     if(!(reps>0||kg>0)){skipped++;return}
     var D=days[d]||(days[d]={date:d,titles:[],ex:[],byName:{}});
     var tt=iT>=0?(r[iT]||'').trim():'';if(tt&&D.titles.indexOf(tt)<0)D.titles.push(tt);
-    var name=r[iE].trim(),E=D.byName[name];
+    var name=esEx(r[iE].trim()),E=D.byName[name];origOf[name]=r[iE].trim();
     if(!E){E={name:name,rows:[]};D.byName[name]=E;D.ex.push(E)}
     var ty=(iY>=0?r[iY]:'').trim().toLowerCase();
     E.rows.push({r:Math.round(reps),k:kg,t:ty==='warmup'?'w':ty==='failure'?'f':'n'});sets++;
@@ -2546,8 +2558,8 @@ function hvParse(txt){
   var list=Object.keys(days).sort().map(function(k){return days[k]}),names={};
   list.forEach(function(D){D.ex.forEach(function(e){names[e.name]=(names[e.name]||0)+1})});
   if(!list.length)throw new Error('sin datos');
-  var map={};Object.keys(names).forEach(function(n){var known='';S.gym.forEach(function(g){if(!known&&g.exercise.toLowerCase()===n.toLowerCase())known=g.muscle});map[n]=known||hvGuess(n)});
-  return {days:list,map:map,names:names,skipped:skipped,sets:sets,over:false};
+  var map={};Object.keys(names).forEach(function(n){var known='';S.gym.forEach(function(g){if(!known&&g.exercise.toLowerCase()===n.toLowerCase())known=g.muscle});map[n]=known||hvGuess(origOf[n])||hvGuess(n)});
+  return {days:list,map:map,names:names,skipped:skipped,sets:sets,over:true};
 }
 function hevyCard(){
   var h=ui.hv,body='';
@@ -2558,7 +2570,7 @@ function hevyCard(){
     body='<p style="margin:10px 0"><b>'+h.days.length+' entrenamientos</b> · '+nm.length+' ejercicios · '+h.sets+' series ('+h.days[0].date+' → '+h.days[h.days.length-1].date+')'+(h.skipped?' · '+h.skipped+' series sin peso ni repeticiones omitidas':'')+'</p>'+
     '<p class="ts" style="margin:0 0 8px">Revisa el músculo de cada ejercicio'+(miss?' (<b>'+miss+' sin asignar</b>: ponlos o se omitirán)':'')+':</p><div id="hvmap" style="max-height:300px;overflow:auto;border:2px solid var(--line);padding:6px">'+
     nm.map(function(n){return '<div style="display:grid;grid-template-columns:1fr 130px;gap:8px;align-items:center;padding:3px 0"><span>'+esc(n)+' <span class="ts">×'+h.names[n]+'</span></span><select class="hvsel" data-n="'+esc(n)+'" aria-label="Músculo de '+esc(n)+'"><option value="">— omitir —</option>'+MUS.map(function(m){return '<option'+(h.map[n]===m?' selected':'')+'>'+m+'</option>'}).join('')+'</select></div>'}).join('')+'</div>'+
-    (exist?'<label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="hvover"'+(h.over?' checked':'')+'> Sobrescribir los '+exist+' días que ya tienen datos (si no, se saltan)</label>':'')+
+    (exist?'<label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="hvover"'+(h.over?' checked':'')+'> Actualizar los '+exist+' días que ya tienes con lo que dice Hevy (si lo desmarcas, se saltan)</label>':'')+
     '<div class="fa"><button class="btn primary" data-act="hvgo">Importar</button><button class="btn" data-act="hvno">Cancelar</button></div>';
   }
   return '<div class="card"><h3>Importar desde Hevy</h3><p style="margin:0 0 10px;color:var(--ink2)">En Hevy: Perfil → Ajustes → Exportar y borrar datos → Exportar datos. Sube aquí el CSV (workouts.csv).</p>'+
@@ -2573,7 +2585,7 @@ function hevyGo(){
     var items=D.ex.filter(function(e){return h.map[e.name]});
     if(!items.length)return;
     S.gymdays=S.gymdays.filter(function(g){return g.date!==D.date});S.gym=S.gym.filter(function(g){return g.date!==D.date});
-    var tags=D.titles.filter(function(t){return GTAGS.some(function(x){return x.toLowerCase()===t.toLowerCase()})}).map(function(t){return GTAGS.filter(function(x){return x.toLowerCase()===t.toLowerCase()})[0]});
+    var tags=[];D.titles.forEach(function(t){var u=ES_TAG[t]||ES_TAG[t.charAt(0).toUpperCase()+t.slice(1).toLowerCase()]||t;GTAGS.forEach(function(x){if(x.toLowerCase()===u.toLowerCase()&&tags.indexOf(x)<0)tags.push(x)})});
     S.gymdays.push({id:uid8(),date:D.date,went:true,routine:tags,note:D.titles.join(' + ').slice(0,140)});
     items.forEach(function(e){
       var rows=e.rows,wk=rows.filter(function(x){return x.t!=='w'}),pool=wk.length?wk:rows;
