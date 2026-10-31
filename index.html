@@ -719,6 +719,13 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
 .gpbody .tile .tv{font-size:22px}
 .gpbody .tile .tl,.gpbody .tile .ts{font-size:9.5px}
 @media (max-width:520px){.gpbody .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* barras horizontales: etiqueta y valor arriba, barra a todo el ancho debajo */
+.hb{grid-template-columns:minmax(0,1fr) auto;row-gap:6px;column-gap:10px;margin:14px 0}
+.hb .hl{grid-area:1/1}
+.hb .hv{grid-area:1/2;min-width:0}
+.hb .tr{grid-area:2/1/3/3;height:14px;background:var(--soft);border:1px solid var(--line);overflow:visible}
+.hb .tr b{min-width:4px;border-right:2px solid var(--ink)}
+.hb .tr u{top:-5px;bottom:-5px;width:2px;background:var(--ink);opacity:.55}
 </style>
 <div id="app">
   <header id="top">
@@ -988,7 +995,7 @@ function cols(items,opt){
 }
 function hbars(rows,max,goal){
   return rows.map(function(r){
-    return '<div class="hb" data-tip="'+esc(r.tip||'')+'"><span class="hl">'+(r.dot?'<s style="background:'+r.dot+'"></s>':'')+esc(r.label)+'</span><div class="tr"><b style="width:'+Math.min(100,r.v/max*100).toFixed(1)+'%;'+(r.color?'--c:'+r.color:'')+(r.v<=0?';min-width:0;width:0':'')+'"></b>'+(goal!=null?'<u style="left:'+Math.min(100,goal/max*100).toFixed(1)+'%"></u>':'')+'</div><span class="hv">'+esc(r.right)+'</span></div>';
+    return '<div class="hb" data-tip="'+esc(r.tip||'')+'"><span class="hl">'+(r.dot?'<s style="background:'+r.dot+'"></s>':'')+esc(r.label)+'</span><div class="tr"><b style="width:'+Math.min(100,r.v/max*100).toFixed(1)+'%;'+(r.color?'--c:'+r.color:'')+(r.v<=0?';min-width:0;width:0':'')+'"></b>'+((r.goal!=null?r.goal:goal)!=null&&(r.goal!=null?r.goal:goal)>0?'<u style="left:'+Math.min(100,(r.goal!=null?r.goal:goal)/max*100).toFixed(1)+'%"></u>':'')+'</div><span class="hv">'+esc(r.right)+'</span></div>';
   }).join('');
 }
 function meter(v,goal,c){return '<div class="meter"><b style="width:'+Math.max(0,Math.min(100,goal?v/goal*100:0)).toFixed(1)+'%'+(c?';--c:'+c:'')+'"></b></div>'}
@@ -1382,7 +1389,7 @@ VIEWS.gym=function(){
     strip+='<button type="button" class="gdv'+(d===today()?' today':'')+(ui.sess.date===d?' sel':'')+(inf.known?(inf.went?' went':' rest'):'')+'" data-act="gseld" data-d="'+d+'" aria-label="'+esc(fdate(d))+(inf.known?(inf.went?', fuiste'+(inf.tags.length?': '+inf.tags.join(', '):''):', descanso'):', sin registrar')+'"><span class="gl">'+DOW(d)+'</span><span class="gn">'+(+d.slice(8))+'</span><span class="gs">'+(inf.known?(inf.went?'✓':'–'):'')+'</span><span class="gt">'+(inf.tags.length?esc(inf.tags.map(function(t){return TSHORT[t]||t.slice(0,3)}).join('+')):'')+'</span></button>';
   }
   var max=Math.max.apply(null,[16].concat(mus.map(function(m){return by[m]||0})));
-  var rows=hbars(mus.map(function(m){var v=by[m]||0,ok=glo(m)&&v>=glo(m);return {label:m,v:v,color:ok?'var(--s3)':'var(--s2)',right:v+(GOALS[m]?' / '+gtxt(m):'')+(ok?' ✓':''),tip:m+': '+v+' series'+(GOALS[m]?' (meta '+gtxt(m)+')':'')}}),max);
+  var rows=hbars(mus.map(function(m){var v=by[m]||0,ok=glo(m)&&v>=glo(m);return {label:m,v:v,goal:glo(m)||null,color:ok?'var(--s3)':'var(--s2)',right:v+(GOALS[m]?' / '+gtxt(m):'')+(ok?' ✓':''),tip:m+': '+v+' series'+(GOALS[m]?' (meta '+gtxt(m)+')':'')}}),max);
   var weeks=[];for(var w=5;w>=0;w--)weeks.push(addDays(ws,-7*w));
   var tbl='<div class="tw"><table class="wt"><thead><tr><th scope="col">Músculo</th>'+weeks.map(function(x){return '<th scope="col">'+esc(fshort(x))+'</th>'}).join('')+'</tr></thead><tbody>'+
     MUSCLES.filter(function(m){return MAIN.indexOf(m)>-1||weeks.some(function(x){return sum(S.gym.filter(function(g){return g.muscle===m&&g.date>=x&&g.date<=addDays(x,6)}),wsets)>0})}).map(function(m){
