@@ -1,5 +1,11 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ff3b3b"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CRM Demo"><meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>CRM personal · Demo</title>
+<title>CRM personal · Demo</title><script>/* demo estática: el día de hoy es siempre el mismo */
+(function(){var R=Date,Y=2026,M=9,D0=30;
+function mk(){var t=new R();return new R(Y,M,D0,t.getHours(),t.getMinutes(),t.getSeconds(),t.getMilliseconds())}
+function F(a,b,c,d,e,f,g){if(!(this instanceof F))return mk().toString();
+ var n=arguments.length;if(n===0)return mk();if(n===1)return new R(a);if(n===2)return new R(a,b);if(n===3)return new R(a,b,c);if(n===4)return new R(a,b,c,d);if(n===5)return new R(a,b,c,d,e);if(n===6)return new R(a,b,c,d,e,f);return new R(a,b,c,d,e,f,g)}
+F.prototype=R.prototype;F.now=function(){return mk().getTime()};F.parse=R.parse;F.UTC=R.UTC;window.Date=F})();
+</script>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23ff3b3b%22/%3E%3Cpath d=%22M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z%22 fill=%22%230b0b0b%22/%3E%3Crect x=%2225%22 y=%223%22 width=%224%22 height=%224%22 fill=%22%230b0b0b%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -823,7 +829,7 @@ function esMigrate(){
 function adopt(d){var e=EMPTY(),ds=e.set;S=Object.assign(e,d);S.set=Object.assign(ds,d.set||{});S.profile=Object.assign(EMPTY().profile,d.profile||{});if(!Array.isArray(S.plans))S.plans=[];if(!Array.isArray(S.ingresos))S.ingresos=[];if(S.set){delete S.set.budget;delete S.set.fiber}if(!Array.isArray(S.gymdays))S.gymdays=[];if(!Array.isArray(S.routines))S.routines=[];esMigrate();}
 var S=EMPTY();
 var raw=null;try{raw=localStorage.getItem(LS);if(raw){var o=JSON.parse(raw);if(o&&o.v===1)adopt(o)}}catch(e){}
-if(!raw)seedDemo();
+seedDemo();
 
 
 /* ===== Demo: datos ficticios relativos a hoy ===== */
@@ -1086,7 +1092,7 @@ function search(ph){return '<input id="q" type="search" placeholder="'+ph+'" val
 function isEmpty(){return !S.gastos.length&&!S.ingresos.length&&!S.gym.length&&!S.comida.length&&!S.cuerpo.length&&!S.plans.length&&!S.gymdays.length}
 function banner(){
   if(!S.example)return '';
-  return '<div class="banner"><p><strong>Versión de demostración.</strong> Todos los datos son ficticios y lo que cambies solo se guarda en tu navegador.</p><button class="btn" data-act="demoreset">Restablecer demo</button><button class="btn" data-act="clear-example">Empezar en blanco</button></div>';
+  return '<div class="banner"><p><strong>Versión de demostración.</strong> Los datos son ficticios y siempre los mismos: lo que cambies dura hasta que recargues.</p><button class="btn" data-act="demoreset">Restablecer demo</button><button class="btn" data-act="clear-example">Empezar en blanco</button></div>';
 }
 function emptyState(){
   return '<div class="card hero"><h2>Tu panel empieza vacío</h2><p style="color:var(--ink2);margin:6px 0 0;max-width:56ch">Registra un gasto, una comida, un entreno o tu peso y aquí verás el resumen del día, las series por músculo y cómo vas con tu presupuesto.</p><div class="fa"><button class="btn primary" data-go="gastos">Añadir un gasto</button><button class="btn" data-go="comida">Registrar comida</button><button class="btn" data-go="gym">Anotar entreno</button><button class="btn" data-go="cuerpo">Peso y sueño</button></div></div>';
