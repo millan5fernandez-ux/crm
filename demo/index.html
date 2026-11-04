@@ -762,6 +762,12 @@ body.drawer-open #dayflow{display:none}
 .tour-dots b{flex:1;height:6px;background:var(--soft);border:1px solid var(--line)}
 .tour-dots b.ok{background:var(--good)}.tour-dots b.cur{background:var(--accent)}
 @media (max-width:720px){.dfg{grid-template-columns:1fr}}
+#camov{position:fixed;inset:0;z-index:1000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#camov video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#camov .camgd{position:relative;width:min(88vw,520px);aspect-ratio:3/4;max-height:68vh;border:3px solid #fff;box-shadow:0 0 0 100vmax rgba(0,0,0,.55);pointer-events:none}
+#camov .camtip{position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;right:16px;margin:0;color:#fff;text-align:center;font:600 14px var(--font-body);text-shadow:0 1px 3px #000}
+#camov .camact{position:absolute;left:0;right:0;bottom:max(20px,env(safe-area-inset-bottom));display:flex;gap:12px;justify-content:center}
+#camov .camact .btn{min-width:130px;min-height:48px}
 </style>
 <div id="app">
   <header id="top">
@@ -1788,7 +1794,7 @@ function ocrRun(file){
 function ingForm(){
   var g=ui.ing;if(!g)return '';
   return '<form class="card" data-form="ingr" autocomplete="off"><h3>'+(g.id?'Editando ingrediente':'Nuevo ingrediente')+'</h3>'+
-   '<div id="ingphotos" class="fa" style="margin:0 0 6px"><label class="btn" for="ingcam">📷 Foto de la etiqueta</label><input id="ingcam" type="file" accept="image/*" capture="environment" hidden><label class="btn" for="ingpic">🖼 Elegir imagen</label><input id="ingpic" type="file" accept="image/*" hidden></div>'+
+   '<div id="ingphotos" class="fa" style="margin:0 0 6px"><button type="button" class="btn" data-act="camopen">📷 Hacer foto de la etiqueta</button><input id="ingcam" type="file" accept="image/*" capture="environment" hidden><label class="btn" for="ingpic">🖼 Elegir imagen</label><input id="ingpic" type="file" accept="image/*" hidden></div>'+
    '<p class="ts" id="ocrmsg" role="status" aria-live="polite" style="margin:0 0 10px">'+esc(g.msg||'Haz foto a la tabla nutricional (valores por 100 g, recta y con buena luz) y se rellena sola; revisa siempre los números.')+'</p>'+
    '<div class="fg">'+
    fld('ingr','name','Ingrediente','text',g.name,'required maxlength="60" placeholder="Pan de molde" data-ing="name"','wide')+
@@ -1846,6 +1852,38 @@ document.addEventListener('change',function(e){
   if(t.dataset.pf==='ing'){var it=ui.plato.items[+t.dataset.pi],ing=S.ingr.filter(function(x){return x.id===t.value})[0];if(it){it.ing=t.value;it.u=ing&&ing.ug?'u':'g';if(it.u==='g'&&(!it.q||it.q<=5))it.q=100;render()}}
   else{var tt=$('#platotot');if(tt)tt.innerHTML=platoTot()}
 });
+
+/* ===== Cámara del móvil para leer etiquetas ===== */
+var camS=null,camEl=null;
+function camClose(){
+  if(camS){camS.getTracks().forEach(function(t){t.stop()});camS=null}
+  if(camEl){camEl.remove();camEl=null}
+  document.removeEventListener('keydown',camKey);
+}
+function camKey(e){if(e.key==='Escape')camClose()}
+function camFallback(msg){camClose();if(ui.ing){ui.ing.msg=msg;var m=$('#ocrmsg');if(m)m.textContent=msg}var f=$('#ingcam');if(f)f.click()}
+function camOpen(){
+  if(!ui.ing||camEl)return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.isSecureContext){camFallback('Este navegador no deja abrir la cámara aquí: se abrirá la cámara del móvil para hacer la foto.');return}
+  camEl=document.createElement('div');camEl.id='camov';camEl.setAttribute('role','dialog');camEl.setAttribute('aria-modal','true');camEl.setAttribute('aria-label','Cámara para leer la etiqueta');
+  camEl.innerHTML='<video id="camvid" autoplay playsinline muted></video><div class="camgd" aria-hidden="true"></div><p class="camtip">Encaja la tabla nutricional dentro del marco, recta y con buena luz</p><div class="camact"><button type="button" class="btn" id="camx">Cerrar</button><button type="button" class="btn primary" id="camsh" disabled>Capturar</button></div>';
+  document.body.appendChild(camEl);document.addEventListener('keydown',camKey);
+  $('#camx').onclick=camClose;
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false}).then(function(st){
+    if(!camEl){st.getTracks().forEach(function(t){t.stop()});return}
+    camS=st;var v=$('#camvid');v.srcObject=st;
+    try{var tr=st.getVideoTracks()[0],cp=tr.getCapabilities&&tr.getCapabilities();if(cp&&cp.focusMode&&cp.focusMode.indexOf('continuous')>-1)tr.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(function(){})}catch(e){}
+    var sh=$('#camsh');sh.disabled=false;sh.focus();
+    sh.onclick=function(){
+      var w=v.videoWidth,h=v.videoHeight;if(!w||!h)return;
+      var k=Math.max(innerWidth/w,innerHeight/h),sw=Math.round(innerWidth/k),sh2=Math.round(innerHeight/k),sx=Math.round((w-sw)/2),sy=Math.round((h-sh2)/2),c=document.createElement('canvas');c.width=sw;c.height=sh2;c.getContext('2d').drawImage(v,sx,sy,sw,sh2,0,0,sw,sh2);
+      c.toBlob(function(bl){camClose();if(bl)ocrRun(bl)},'image/jpeg',.92);
+    };
+  }).catch(function(err){
+    var n=err&&err.name;
+    camFallback(n==='NotAllowedError'||n==='SecurityError'?'No hay permiso para usar la cámara. Actívalo en los ajustes del navegador, o haz la foto con la cámara del móvil.':'No se pudo abrir la cámara: se abrirá la cámara del móvil para hacer la foto.');
+  });
+}
 /* ===== Tu día: pasos y recorrido guiado ===== */
 var MOM=['Mañana','Tarde','Noche'];
 function dayRec(){var t=today();return S.cuerpo.filter(function(c){return c.date===t})[0]||{}}
@@ -1992,6 +2030,7 @@ document.addEventListener('click',function(e){
   else if(a==='sbin'){sbAuth('in')}
   else if(a==='sbup'){sbAuth('up')}
   else if(a==='sbout'){sbStore(null);dbDoc=null;try{localStorage.removeItem('crmdemo-sb-linked')}catch(e){}sbNote='';setSync('Datos guardados solo en este dispositivo');render()}
+  else if(a==='camopen'){camOpen()}
   else if(a==='ingnew'){ui.ing=ingBlank();ui.plato=null;render();scrollTo2('form[data-form="ingr"]')}
   else if(a==='ingedit'){var ig=S.ingr.filter(function(x){return x.id===b.dataset.id})[0];if(ig){ui.ing={id:ig.id,name:ig.name,kcal:ig.kcal,prot:ig.prot,carbs:ig.carbs,fat:ig.fat,sugar:ig.sugar,base:100,unit:ig.unit||'',ug:ig.ug||'',raw:'',msg:'',busy:false,del:false};ui.plato=null;render();scrollTo2('form[data-form="ingr"]')}}
   else if(a==='ingcancel'){ui.ing=null;render()}
