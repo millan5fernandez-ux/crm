@@ -726,6 +726,34 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
 .hb .tr{grid-area:2/1/3/3;height:14px;background:var(--soft);border:1px solid var(--line);overflow:visible}
 .hb .tr b{min-width:4px;border-right:2px solid var(--ink)}
 .hb .tr u{top:-5px;bottom:-5px;width:2px;background:var(--ink);opacity:.55}
+/* Tu día */
+#dayflow{margin:0 0 14px;padding:14px}
+#dayflow .dh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+#dayflow .dfc{font:700 12px var(--font-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink2)}
+.dfg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.dfm{border:2px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.dfm.now{border-color:var(--edge);box-shadow:4px 4px 0 var(--accent)}
+.dfm h4{margin:0 0 2px;font:700 12px var(--font-mono);letter-spacing:.06em;text-transform:uppercase}
+.dfm h4 em{font-style:normal;background:var(--accent);color:#0b0b0b;padding:1px 6px;margin-left:6px}
+.dfs{display:flex;align-items:center;gap:8px;min-height:40px;padding:6px 10px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:600 13px var(--font-body);text-align:left;cursor:pointer}
+.dfs:hover{border-color:var(--edge)}
+.dfs i{flex:none;width:18px;height:18px;border:2px solid var(--line);display:grid;place-items:center;font-style:normal;font-size:12px;line-height:1}
+.dfs.ok{background:color-mix(in srgb,var(--good) 14%,var(--card))}
+.dfs.ok i{background:var(--good);border-color:var(--good);color:#0b0b0b}
+.dfs span{min-width:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.dfa{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.tour{position:sticky;top:0;z-index:6;background:var(--card);border:2px solid var(--edge);box-shadow:4px 4px 0 var(--accent);padding:12px;margin:0 0 14px}
+.tour-h{display:flex;justify-content:space-between;align-items:center;gap:10px;font:700 11px var(--font-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink2)}
+.tour h3{margin:8px 0 2px;font-size:20px}
+.tour p{margin:0;color:var(--ink2)}
+.tour h3{color:var(--ink);font-family:var(--font-body)}.tour h3::before{content:none!important}
+#view form[data-form],#gbuilder{scroll-margin-top:210px}
+body.drawer-open #dayflow{display:none}
+.tour-dots{display:flex;gap:6px;margin-top:10px}
+.tour-dots b{flex:1;height:6px;background:var(--soft);border:1px solid var(--line)}
+.tour-dots b.ok{background:var(--good)}.tour-dots b.cur{background:var(--accent)}
+@media (max-width:720px){.dfg{grid-template-columns:1fr}}
 </style>
 <div id="app">
   <header id="top">
@@ -742,6 +770,7 @@ body.intro .bw .bq{transform-origin:bottom;animation:grow 1.19s 1.53s cubic-bezi
     </div>
     <div class="hero"><h1 class="big">DASH<span>BOARD</span></h1><div id="clock" aria-live="off"><div class="ckg" id="cgreet"></div><div class="ckt"><span id="chm"></span><small id="cs"></small></div><div class="ckd" id="cdate"></div></div></div>
     <p class="sub">Tu semana de un vistazo: gastos, gym, comida y días. Pulsa una tarjeta o una zona del escritorio para abrirla.</p>
+    <section class="dcard" id="dayflow" aria-label="Tu día"></section>
     <div id="kpis"></div>
     <section class="dcard" id="acct" aria-label="Cuenta y sincronización"></section>
     <div id="dgrid">
@@ -1471,7 +1500,7 @@ VIEWS.comida=function(){
   var e=curEdit('comida');
   var form=formWrap('comida','Añadir comida',
     fld('comida','date','Fecha','date',e?e.date:day,'required')+
-    sel('comida','meal','Momento',MEALS,e?e.meal:'Comida')+
+    sel('comida','meal','Momento',MEALS,e?e.meal:(ui.mealDef||'Comida'))+
     fld('comida','name','Alimento','text',e?e.name:'','required maxlength="60" placeholder="Arroz con pollo"','wide')+
     fld('comida','kcal','kcal','number',e?e.kcal:'','min="0" step="any" inputmode="numeric" placeholder="auto"')+
     fld('comida','prot','Prot (g)','number',e&&e.prot!=null?e.prot:'','min="0" step="any" inputmode="decimal"')+
@@ -1635,10 +1664,64 @@ LISTS.metas=function(){
 };
 
 /* ---------- render ---------- */
+/* ===== Tu día: pasos y recorrido guiado ===== */
+var MOM=['Mañana','Tarde','Noche'];
+function dayRec(){var t=today();return S.cuerpo.filter(function(c){return c.date===t})[0]||{}}
+function mealDone(m){var t=today();return S.comida.some(function(c){return c.date===t&&c.meal===m})}
+var STEPS=[
+ {m:0,label:'Peso y sueño',tab:'cuerpo',form:'cuerpo',tip:'Pésate en ayunas y apunta cuántas horas has dormido.',done:function(){var r=dayRec();return r.weight!=null||r.sleep!=null}},
+ {m:0,label:'Desayuno',tab:'comida',form:'comida',meal:'Desayuno',tip:'Apunta qué has desayunado y sus calorías.',done:function(){return mealDone('Desayuno')}},
+ {m:1,label:'Comida',tab:'comida',form:'comida',meal:'Comida',tip:'Apunta la comida (y la merienda, si la hay).',done:function(){return mealDone('Comida')}},
+ {m:1,label:'Gym',tab:'gym',form:'',tip:'Registra tu entreno de hoy o marca que hoy descansas.',done:function(){var t=today();return S.gym.some(function(g){return g.date===t})||S.gymdays.some(function(g){return g.date===t})}},
+ {m:1,label:'Gastos',tab:'gastos',form:'gastos',tip:'Apunta lo que has gastado hoy. Si no has gastado nada, pulsa Saltar.',done:function(){var t=today();return S.gastos.some(function(g){return g.date===t})}},
+ {m:2,label:'Cena',tab:'comida',form:'comida',meal:'Cena',tip:'Apunta la cena y sus calorías.',done:function(){return mealDone('Cena')}},
+ {m:2,label:'Agua, ánimo y nota',tab:'cuerpo',form:'cuerpon',tip:'Cierra el día: agua bebida, cómo te has sentido y una nota.',done:function(){var r=dayRec();return r.mood!=null||r.water!=null}}
+];
+function nowMom(){var h=new Date().getHours();return h<12?0:h<20?1:2}
+function dayFlow(){
+  var el=$('#dayflow');if(!el)return;
+  var nd=STEPS.filter(function(s){return s.done()}).length,cm=nowMom(),all=nd===STEPS.length;
+  var cols=MOM.map(function(n,mi){
+    var btns=STEPS.map(function(s,i){return s.m===mi?'<button type="button" class="dfs'+(s.done()?' ok':'')+'" data-act="dstep" data-i="'+i+'"><i aria-hidden="true">'+(s.done()?'✓':'')+'</i><span>'+esc(s.label)+'</span><small class="sr">'+(s.done()?' hecho':' pendiente')+'</small></button>':''}).join('');
+    return '<div class="dfm'+(mi===cm?' now':'')+'"><h4>'+n+(mi===cm?' <em>ahora</em>':'')+'</h4>'+btns+'</div>';
+  }).join('');
+  el.innerHTML='<div class="dh"><h3>Tu día</h3><span class="dfc">'+nd+' / '+STEPS.length+' apuntado'+(nd===1?'':'s')+'</span></div>'+
+    '<div class="dfg">'+cols+'</div>'+
+    '<div class="dfa">'+(all?'<span class="pill good">✓ Día completo</span>':'<button type="button" class="btn primary" data-act="dstart">▶ Empezar recorrido</button>')+'<span class="ts">Pulsa un paso para abrirlo, o deja que te guíe la escena 3D.</span></div>';
+}
+function openStep(i){
+  var s=STEPS[i];if(!s)return;
+  ui.mealDef=s.meal||null;ui.keepMeal=true;
+  go(s.tab);ui.keepMeal=false;
+  setTimeout(function(){var f=s.form?$('form[data-form="'+s.form+'"]'):$('#gbuilder');if(f&&f.scrollIntoView)f.scrollIntoView({behavior:'smooth',block:'start'})},350);
+  if(scene3d&&scene3d.light)scene3d.light(s.tab);
+  setTimeout(function(){var st=$('#stage');if(st&&st.scrollIntoView&&innerWidth>860)st.scrollIntoView({behavior:'smooth',block:'center'})},120);
+}
+function dayStep(i){ui.tour=null;openStep(i)}
+function tourStart(){
+  var i=0,cm=nowMom();for(;i<STEPS.length;i++)if(!STEPS[i].done()&&STEPS[i].m===cm)break;
+  if(i>=STEPS.length){i=0;for(;i<STEPS.length;i++)if(!STEPS[i].done())break}
+  if(i>=STEPS.length)i=0;
+  ui.tour={i:i};openStep(i);
+}
+function tourMove(d){
+  if(!ui.tour)return;var j=ui.tour.i+d;
+  if(j<0)return;
+  if(j>=STEPS.length){ui.tour=null;ui.mealDef=null;go('escritorio');return}
+  ui.tour={i:j};openStep(j);
+}
+function tourBar(){
+  if(!ui.tour)return '';var i=ui.tour.i,s=STEPS[i];if(!s)return '';
+  var last=i===STEPS.length-1,dn=s.done();
+  return '<div class="tour" role="region" aria-label="Recorrido del día"><div class="tour-h"><span>// Recorrido · paso '+(i+1)+' de '+STEPS.length+' · '+MOM[s.m]+'</span><button type="button" class="btn" data-act="tourquit">Salir</button></div>'+
+    '<h3>'+esc(s.label)+(dn?' <span class="pill good">✓ Hecho</span>':'')+'</h3><p>'+esc(s.tip)+'</p>'+
+    '<div class="tour-dots" aria-hidden="true">'+STEPS.map(function(x,k){return '<b class="'+(k===i?'cur':x.done()?'ok':'')+'"></b>'}).join('')+'</div>'+
+    '<div class="fa" style="margin-top:10px"><button type="button" class="btn" data-act="tourprev"'+(i===0?' disabled':'')+'>← Anterior</button><button type="button" class="btn'+(dn?' primary':'')+'" data-act="tournext">'+(last?'Terminar':dn?'Siguiente →':'Saltar →')+'</button></div></div>';
+}
 function render(){
   syncGoals();lines={};
   var v=VIEWS[ui.tab];
-  $('#view').innerHTML=v?banner()+v():'';
+  $('#view').innerHTML=v?tourBar()+banner()+v():'';
   var dt=$('#dtitle');if(dt)dt.textContent=TITLES[ui.tab]||'';
   renderHud();
   document.querySelectorAll('.tab').forEach(function(a){if(a.dataset.tab===ui.tab){a.setAttribute('aria-current','page');try{var nv=a.parentNode;if(nv.scrollWidth>nv.clientWidth)nv.scrollTo({left:a.offsetLeft-nv.clientWidth/2+a.offsetWidth/2,behavior:'auto'})}catch(e){}}else a.removeAttribute('aria-current')});
@@ -1705,7 +1788,7 @@ function countUp(root){
   });
 }
 function refreshList(){var el=$('#list');if(el)el.innerHTML=LISTS[ui.tab]();var il=$('#ilist');if(il&&LISTS.ingresos)il.innerHTML=LISTS.ingresos()}
-function go(tab){ui.tab=tab;ui.edit=null;ui.del='';ui.q='';ui.cat='';ui.reset=false;ui.backup='';ui.anim=true;try{history.replaceState(null,'','#'+tab)}catch(e){}setDrawer(tab!=='escritorio');if(scene3d)scene3d.focus(tab);render()}
+function go(tab){if(ui.tour&&(!STEPS[ui.tour.i]||STEPS[ui.tour.i].tab!==tab))ui.tour=null;if(!ui.tour&&!ui.keepMeal)ui.mealDef=null;ui.tab=tab;ui.edit=null;ui.del='';ui.q='';ui.cat='';ui.reset=false;ui.backup='';ui.anim=true;try{history.replaceState(null,'','#'+tab)}catch(e){}setDrawer(tab!=='escritorio');if(scene3d)scene3d.focus(tab);render()}
 
 /* ---------- eventos ---------- */
 document.addEventListener('click',function(e){
@@ -1727,6 +1810,11 @@ document.addEventListener('click',function(e){
   else if(a==='sbin'){sbAuth('in')}
   else if(a==='sbup'){sbAuth('up')}
   else if(a==='sbout'){sbStore(null);dbDoc=null;try{localStorage.removeItem('bitacora-sb-linked')}catch(e){}sbNote='';setSync('Datos guardados solo en este dispositivo');render()}
+  else if(a==='dstep'){dayStep(+b.dataset.i)}
+  else if(a==='dstart'){tourStart()}
+  else if(a==='tournext'){tourMove(1)}
+  else if(a==='tourprev'){tourMove(-1)}
+  else if(a==='tourquit'){ui.tour=null;ui.mealDef=null;go('escritorio')}
   else if(a==='gstats'){ui.gstats=(ui.gstats===false);render()}
   else if(a==='gscroll'){var gb=$('#gbuilder');if(gb)gb.scrollIntoView({behavior:'smooth',block:'start'})}
   else if(a==='hvgo'){hevyGo()}
@@ -1956,6 +2044,7 @@ function renderHud(){
     ['metas','Próximo plan',np?esc(np.title):'—','',np?relDay(np.date)+(np.time?' · '+esc(np.time):''):'Añade un plan','wide']
   ];
   var el=$('#kpis');
+  dayFlow();
   var up=$('#upnext');
   if(up)up.innerHTML='<div class="dh"><h3>Próximo plan</h3><button class="mini" data-go="metas" type="button">Calendario</button></div>'+(np?'<p class="up-t">'+esc(np.title)+'</p><div class="up-m"><span>'+relDay(np.date)+'</span>'+(np.time?'<span>'+esc(np.time)+'</span>':'')+'</div><button class="up-b" data-go="metas" type="button">Abrir calendario</button>':'<p class="up-t">Sin planes</p><div class="up-m"><span>Añade uno</span></div><button class="up-b" data-go="metas" type="button">Crear un plan</button>');
   var ch=$('#chart');
@@ -2492,7 +2581,7 @@ function initScene(){
     blinkT+=dt;if(blinkT>.55){blinkT=0;blink=!blink;drawScreen()}
     R.render(scene,cam);
   }
-  scene3d={focus:focus,screen:drawScreen,mood:setMood,burst:burst};
+  scene3d={focus:focus,screen:drawScreen,mood:setMood,burst:burst,light:function(tab){Object.keys(zones).forEach(function(k){zones[k].hover=(k===tab)});hoverZ=zones[tab]||null}};
   drawScreen();
   focus(ui.tab);
   requestAnimationFrame(frame);
@@ -2627,6 +2716,7 @@ document.addEventListener('change',function(e){
   }else if(t.classList&&t.classList.contains('hvsel')&&ui.hv){ui.hv.map[t.dataset.n]=t.value}
   else if(t.id==='hvover'&&ui.hv){ui.hv.over=t.checked}
 });
+
 })();
 
 </script>
