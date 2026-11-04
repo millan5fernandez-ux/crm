@@ -1765,6 +1765,12 @@ function labelParse(raw){
   if(best){if(best.p!=null)out.prot=best.p;if(best.c!=null)out.carbs=best.c;if(best.f!=null)out.fat=best.f}
   if(ts){var cs=ocrCands(ts).filter(function(v){return out.carbs==null||v<=out.carbs});if(cs.length)out.sugar=cs[0]}
   var b=t.match(/por\s*(\d{2,3})\s*(?:g|ml)\b/);if(b)out.base=parseFloat(b[1]);
+  /* peso de la porción: «1 rebanada (30 g)», «30 g (2 rebanadas)», «por loncha 15 g»… */
+  var U='rebanadas?|lonchas?|lonchitas?|rodajas?|galletas?|barritas?|filetes?|tostadas?|porciones?|raciones?|unidades?|huevos?|piezas?';
+  var m1=t.match(new RegExp('(\\d+)?\\s*('+U+')[^0-9\\n]{0,14}?\\(?\\s*(\\d+(?:\\.\\d+)?)\\s*g\\b')),m2=t.match(new RegExp('(\\d+(?:\\.\\d+)?)\\s*g\\s*\\(?\\s*(\\d+)?\\s*('+U+')\\b'));
+  var pu=null,pg=null,pn=1;
+  if(m1){pu=m1[2];pg=parseFloat(m1[3]);pn=parseInt(m1[1],10)||1}else if(m2){pu=m2[3];pg=parseFloat(m2[1]);pn=parseInt(m2[2],10)||1}
+  if(pu&&pg){var one=pg/pn;if(one>=2&&one<=250){out.ug=Math.round(one*10)/10;out.unit=pu.replace(/s$/,'').replace(/^(porcione|racione|unidade)$/,function(x){return x.replace(/e$/,'')})}}
   return out;
 }
 function loadScript(src){return new Promise(function(res,rej){var el=document.createElement('script');el.src=src;el.onload=res;el.onerror=function(){rej(new Error('No se pudo descargar el lector de texto'))};document.head.appendChild(el)})}
@@ -1786,8 +1792,9 @@ function ocrRun(file){
     var txt=(r&&r.data&&r.data.text)||'',o=labelParse(txt),g2=ui.ing;if(!g2)return;g2.busy=false;g2.raw=txt;
     ['kcal','prot','carbs','fat','sugar'].forEach(function(k){if(o[k]!=null)g2[k]=o[k]});
     if(o.base)g2.base=o.base;
+    if(o.ug&&!g2.ug){g2.ug=o.ug;if(!g2.unit)g2.unit=o.unit}
     var miss=['kcal','prot','carbs','fat','sugar'].filter(function(k){return o[k]==null}).map(function(k){return {kcal:'kcal',prot:'proteínas',carbs:'hidratos',fat:'grasas',sugar:'azúcares'}[k]});
-    g2.msg=(miss.length===5?'No he podido leer ningún dato. Prueba con otra foto más recta y con buena luz, o escríbelos a mano.':'Leído. Revisa los números con la etiqueta antes de guardar.'+(miss.length?' Sin encontrar: '+miss.join(', ')+'.':''));
+    var pr=o.ug?' Peso por '+o.unit+': '+o.ug+' g (de la etiqueta; compruébalo).':'';g2.msg=(miss.length===5?'No he podido leer ningún dato. Prueba con otra foto más recta y con buena luz, o escríbelos a mano.':'Leído. Revisa los números con la etiqueta antes de guardar.'+(miss.length?' Sin encontrar: '+miss.join(', ')+'.':'')+pr);
     render();scrollTo2('form[data-form="ingr"]');
   }).catch(function(e){var g3=ui.ing;if(g3){g3.busy=false;g3.msg='No se pudo leer la foto ('+(e&&e.message?e.message:'error')+'). Puede que aquí no haya conexión con el lector de texto: escribe los datos a mano.'}render()});
 }
