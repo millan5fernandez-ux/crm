@@ -1461,11 +1461,8 @@ function gymSummary(date){
 var AFORO_URL='';
 function aforoCard(){
   if(!AFORO_URL)return '';
-  return '<div class="card" id="aforo" style="margin:0 0 14px"><div class="bar"><h3 style="margin:0">Aforo del gimnasio · ahora</h3><div class="fa" style="margin:0"><button class="btn" type="button" data-act="afororef">↻ Actualizar</button><a class="btn" href="'+esc(AFORO_URL)+'" target="_blank" rel="noopener">Abrir ↗</a></div></div>'+
-   '<iframe id="aforofr" title="Aforo en tiempo real del gimnasio" src="'+esc(AFORO_URL)+'" loading="lazy" referrerpolicy="no-referrer" style="width:100%;height:440px;border:0;background:#fff;margin-top:10px"></iframe>'+
-   '<p class="ts" style="margin:8px 0 0">Datos en directo de la web de tu gimnasio; se actualiza solo cada 2 minutos. Si no se ve nada, usa «Abrir».</p></div>';
+  return '<div class="card" id="aforo" style="margin:0 0 14px"><div class="bar"><h3 style="margin:0">Aforo del gimnasio</h3><div class="fa" style="margin:0"><a class="btn primary" href="'+esc(AFORO_URL)+'" target="_blank" rel="noopener">Ver aforo ahora ↗</a></div></div><p class="ts" style="margin:8px 0 0">La web del gimnasio no permite mostrarse dentro de otras páginas: se abre en una pestaña nueva.</p></div>';
 }
-setInterval(function(){var f=document.getElementById('aforofr');if(f&&!document.hidden){var u=AFORO_URL+(AFORO_URL.indexOf('?')>-1?'&':'?')+'_='+Date.now();f.src=u}},120000);
 VIEWS.gym=function(){
   if(!ui.sess)ui.sess=loadDay(today());
   var gw=ui.gw||0;
@@ -2147,7 +2144,6 @@ document.addEventListener('click',function(e){
   else if(a==='tourquit'){ui.tour=null;ui.mealDef=null;go('escritorio')}
   else if(a==='demoreset'){snap('antes de restablecer demo');seedDemo();ui.sess=null;commit()}
   else if(a==='gstats'){ui.gstats=(ui.gstats===false);render()}
-  else if(a==='afororef'){var fr=document.getElementById('aforofr');if(fr)fr.src=AFORO_URL+(AFORO_URL.indexOf('?')>-1?'&':'?')+'_='+Date.now()}
   else if(a==='gscroll'){var gb=$('#gbuilder');if(gb)gb.scrollIntoView({behavior:'smooth',block:'start'})}
   else if(a==='hvgo'){hevyGo()}
   else if(a==='hvno'){ui.hv=null;ui.hvmsg='';render()}
