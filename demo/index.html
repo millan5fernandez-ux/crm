@@ -1497,8 +1497,7 @@ VIEWS.gym=function(){
   var best=pts.length?Math.max.apply(null,pts.map(function(p){return p.y})):null;
   var title=gw===0?'Esta semana':'Semana del '+fshort(ws);
   return '<div class="bar"><h2>Gym</h2><div class="nav"><button class="btn" data-act="gweek" data-d="-1" aria-label="Semana anterior">←</button><strong>'+esc(title)+'</strong><button class="btn" data-act="gweek" data-d="1" aria-label="Semana siguiente"'+(gw>=0?' disabled':'')+'>→</button>'+(gw!==0?'<button class="btn" data-act="gweek0">Hoy</button>':'')+'</div></div>'+
-  '<div class="card"><h3>'+esc(fshort(ws))+' – '+esc(fshort(we))+' · pulsa un día para registrarlo</h3><div class="gstrip">'+strip+'</div></div>'+
-  aforoCard()+'<div class="gpanel"><div class="bar"><h3 style="margin:0">Esta semana · datos</h3><div class="fa" style="margin:0"><button class="btn" type="button" data-act="gscroll">Registrar ↓</button><button class="btn" type="button" data-act="gstats" aria-expanded="'+(ui.gstats!==false)+'">'+(ui.gstats!==false?'Ocultar':'Mostrar')+'</button></div></div>'+
+  hevyCard()+aforoCard()+'<div class="gpanel"><div class="bar"><h3 style="margin:0">Esta semana · datos</h3><div class="fa" style="margin:0"><button class="btn" type="button" data-act="gstats" aria-expanded="'+(ui.gstats!==false)+'">'+(ui.gstats!==false?'Ocultar':'Mostrar')+'</button></div></div>'+
   (ui.gstats!==false?'<div class="gpbody">'+
   '<div class="tiles">'+
     tile('Sesiones',String(went),'/ 7 días','','Días que has ido')+
@@ -1513,7 +1512,6 @@ VIEWS.gym=function(){
   '<div class="card"><div class="bar"><h3 style="margin:0">Progreso</h3>'+(exs.length?'<select id="exsel" aria-label="Ejercicio" style="max-width:220px">'+exs.map(function(x){return '<option'+(x===ex?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select>':'')+'</div>'+
     (exs.length?lineBox('gx',{pts:pts,aria:'Progreso de '+ex,color:'var(--s2)'})+'<p class="ts">'+(best!=null?'Mejor 1RM estimado: <strong>'+num(best,1)+' kg</strong>':'')+'</p>':'<p class="empty">Registra una sesión para ver el progreso.</p>')+'</div>'+
   '</div>':'')+'</div>'+
-  '<div id="gbuilder">'+builderHtml()+'</div>'+
   '<div class="card"><h3>Semanas anteriores · series por músculo</h3>'+tbl+'<p class="ts">✓ indica que llegaste al mínimo: '+MAIN.map(function(m){return m+' '+gtxt(m)}).join(' · ')+'. <button class="ic" data-go="ajustes">Editar rangos</button></p></div>'+
   '<div class="card"><div class="bar"><h3 style="margin:0">Historial</h3>'+search('Buscar ejercicio o rutina')+'</div><div id="list">'+LISTS.gym()+'</div></div>';
 };
@@ -1530,7 +1528,7 @@ LISTS.gym=function(){
   return '<ul class="rows">'+ds.map(function(d){
     var inf=dayInfo(d),n=sum(S.gym.filter(function(g){return g.date===d}),wsets);
     var conf=ui.del==='gymday:'+d;
-    return '<li class="row"><span class="rd">'+esc(fshort(d))+'</span><span><span class="rt">'+(inf.went?(inf.tags.length?esc(inf.tags.join(' + ')):'Sesión'):'No fui')+'</span><span class="rs">'+(inf.went&&gymSummary(d)?'<span>'+gymSummary(d)+'</span>':'')+'<span class="ra"><button class="ic" data-act="gload" data-d="'+d+'">Editar</button><button class="ic'+(conf?' danger':'')+'" data-act="gdel" data-d="'+d+'">'+(conf?'Confirmar borrado':'Borrar')+'</button></span></span></span><span class="rv">'+(inf.went?n+' series':'')+'</span></li>';
+    return '<li class="row"><span class="rd">'+esc(fshort(d))+'</span><span><span class="rt">'+(inf.went?(inf.tags.length?esc(inf.tags.join(' + ')):'Sesión'):'No fui')+'</span><span class="rs">'+(inf.went&&gymSummary(d)?'<span>'+gymSummary(d)+'</span>':'')+'<span class="ra"><button class="ic'+(conf?' danger':'')+'" data-act="gdel" data-d="'+d+'">'+(conf?'Confirmar borrado':'Borrar')+'</button></span></span></span><span class="rv">'+(inf.went?n+' series':'')+'</span></li>';
   }).join('')+'</ul>';
 };
 
@@ -1665,7 +1663,7 @@ VIEWS.ajustes=function(){
   var gl='<form class="card" data-form="goals" autocomplete="off"><h3>Series semanales por músculo</h3><p class="ts" style="margin:0 0 10px">Rango objetivo de series por semana (sin contar el calentamiento). Si quieres una cifra fija, pon el mismo número en las dos casillas.</p><div class="fg">'+
     MAIN.map(function(m){return '<div class="f"><span>'+esc(m)+'</span><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input type="number" name="lo_'+esc(m)+'" aria-label="'+esc(m)+' mínimo" min="0" max="60" step="1" inputmode="numeric" value="'+GOALS[m][0]+'" required><input type="number" name="hi_'+esc(m)+'" aria-label="'+esc(m)+' máximo" min="0" max="60" step="1" inputmode="numeric" value="'+GOALS[m][1]+'" required></div></div>'}).join('')+
     '</div><p class="ts">Izquierda: mínimo · derecha: máximo.</p><div class="fa"><button class="btn primary" type="submit">Guardar series</button><button class="btn" type="button" data-act="goalsreset">Restablecer</button></div></form>';
-  return '<div class="bar"><h2>Ajustes</h2></div>'+sbCard()+snapCard()+hevyCard()+'<div class="grid">'+perfil+metas+'</div>'+gl+
+  return '<div class="bar"><h2>Ajustes</h2></div>'+sbCard()+snapCard()+'<div class="grid">'+perfil+metas+'</div>'+gl+
   '<div class="card"><h3>Datos</h3><p style="margin:0 0 10px;color:var(--ink2)">'+S.gastos.length+' gastos · '+S.gym.length+' ejercicios · '+S.comida.length+' comidas · '+S.cuerpo.length+' registros personales · '+S.plans.length+' planes</p><div class="fa" style="margin-top:0"><button class="btn" data-act="copy">Copiar copia de seguridad</button><button class="btn danger" data-act="reset">'+(ui.reset?'Confirmar: borrar todo':'Borrar todos los datos')+'</button>'+(ui.reset?'<button class="btn" data-act="reset-no">Cancelar</button>':'')+'</div>'+(ui.backup?'<p class="ts">Selecciona y copia este texto:</p><textarea readonly id="bk">'+esc(ui.backup)+'</textarea>':'')+'<h3 style="margin-top:16px">Importar copia de seguridad</h3><p class="ts" style="margin:0 0 8px">Pega aquí el texto copiado de otra versión de tu panel. Sustituye los datos actuales.</p><textarea id="imp" aria-label="Copia de seguridad a importar" placeholder="Pega aquí la copia"></textarea><div class="fa"><button class="btn primary" data-act="import">Importar</button></div>'+(ui.impmsg?'<p class="ts">'+esc(ui.impmsg)+'</p>':'')+'</div>';
 };
 LISTS.cuerpo=function(){
@@ -1984,7 +1982,7 @@ var STEPS=[
  {m:0,label:'Peso y sueño',tab:'cuerpo',form:'cuerpo',tip:'Pésate en ayunas y apunta cuántas horas has dormido.',done:function(){var r=dayRec();return r.weight!=null||r.sleep!=null}},
  {m:0,label:'Desayuno',tab:'comida',form:'comida',meal:'Desayuno',tip:'Apunta qué has desayunado y sus calorías.',done:function(){return mealDone('Desayuno')}},
  {m:1,label:'Comida',tab:'comida',form:'comida',meal:'Comida',tip:'Apunta la comida (y la merienda, si la hay).',done:function(){return mealDone('Comida')}},
- {m:1,label:'Gym',tab:'gym',form:'',tip:'Registra tu entreno de hoy o marca que hoy descansas.',done:function(){var t=today();return S.gym.some(function(g){return g.date===t})||S.gymdays.some(function(g){return g.date===t})}},
+ {m:1,label:'Gym',tab:'gym',form:'',tip:'Importa el CSV de Hevy de hoy.',done:function(){var t=today();return S.gym.some(function(g){return g.date===t})||S.gymdays.some(function(g){return g.date===t})}},
  {m:1,label:'Gastos',tab:'gastos',form:'gastos',tip:'Apunta lo que has gastado hoy. Si no has gastado nada, pulsa Saltar.',done:function(){var t=today();return S.gastos.some(function(g){return g.date===t})}},
  {m:2,label:'Cena',tab:'comida',form:'comida',meal:'Cena',tip:'Apunta la cena y sus calorías.',done:function(){return mealDone('Cena')}},
  {m:2,label:'Agua, ánimo y nota',tab:'cuerpo',form:'cuerpon',tip:'Cierra el día: agua bebida, cómo te has sentido y una nota.',done:function(){var r=dayRec();return r.mood!=null||r.water!=null}}
