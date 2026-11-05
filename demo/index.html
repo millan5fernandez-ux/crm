@@ -1493,8 +1493,8 @@ VIEWS.gym=function(){
       }).join('')+'</tr>';
     }).join('')+'</tbody></table></div>';
   var exs=exList(),ex=ui.ex&&exs.indexOf(ui.ex)>-1?ui.ex:(exs[0]||'');
-  var byDate={};S.gym.filter(function(g){return g.exercise===ex}).forEach(function(g){var v=e1rm(g);if(!byDate[g.date]||v>byDate[g.date])byDate[g.date]=v});
-  var pts=Object.keys(byDate).sort().map(function(d){return {x:dn(d),y:+byDate[d].toFixed(1),label:fshort(d),tip:fdate(d)+': '+num(byDate[d],1)+' kg (1RM estimado)'}});
+  var byDate={};S.gym.filter(function(g){return g.exercise===ex}).forEach(function(g){var v=gmax(g);if(!byDate[g.date]||v>byDate[g.date])byDate[g.date]=v});
+  var pts=Object.keys(byDate).sort().map(function(d){return {x:dn(d),y:+byDate[d].toFixed(1),label:fshort(d),tip:fdate(d)+': '+num(byDate[d],1)+' kg (peso máximo)'}});
   var best=pts.length?Math.max.apply(null,pts.map(function(p){return p.y})):null;
   var title=gw===0?'Esta semana':'Semana del '+fshort(ws);
   return '<div class="bar"><h2>Gym</h2><div class="nav"><button class="btn" data-act="gweek" data-d="-1" aria-label="Semana anterior">←</button><strong>'+esc(title)+'</strong><button class="btn" data-act="gweek" data-d="1" aria-label="Semana siguiente"'+(gw>=0?' disabled':'')+'>→</button>'+(gw!==0?'<button class="btn" data-act="gweek0">Hoy</button>':'')+'</div></div>'+
@@ -1511,7 +1511,7 @@ VIEWS.gym=function(){
   '<div class="card"><h3>Series por músculo · meta semanal</h3>'+rows+'</div>'+
   '</div>'+
   '<div class="card"><div class="bar"><h3 style="margin:0">Progreso</h3>'+(exs.length?'<select id="exsel" aria-label="Ejercicio" style="max-width:220px">'+exs.map(function(x){return '<option'+(x===ex?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select>':'')+'</div>'+
-    (exs.length?lineBox('gx',{pts:pts,aria:'Progreso de '+ex,color:'var(--s2)'})+'<p class="ts">'+(best!=null?'Mejor 1RM estimado: <strong>'+num(best,1)+' kg</strong>':'')+'</p>':'<p class="empty">Registra una sesión para ver el progreso.</p>')+'</div>'+
+    (exs.length?lineBox('gx',{pts:pts,aria:'Progreso de '+ex,color:'var(--s2)'})+'<p class="ts">'+(best!=null?'Peso máximo: <strong>'+num(best,1)+' kg</strong>':'')+'</p>':'<p class="empty">Registra una sesión para ver el progreso.</p>')+'</div>'+
   '</div>':'')+'</div>'+
   '<div class="card"><h3>Semanas anteriores · series por músculo</h3>'+tbl+'<p class="ts">✓ indica que llegaste al mínimo: '+MAIN.map(function(m){return m+' '+gtxt(m)}).join(' · ')+'. <button class="ic" data-go="ajustes">Editar rangos</button></p></div>'+
   '<div class="card"><div class="bar"><h3 style="margin:0">Historial</h3>'+search('Buscar ejercicio o rutina')+'</div><div id="list">'+LISTS.gym()+'</div></div>';
