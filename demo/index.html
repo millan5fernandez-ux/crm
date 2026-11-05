@@ -54,6 +54,7 @@ h3{font:600 12px/1.2 var(--font-body);margin:0 0 10px;color:var(--ink2);text-tra
 .pill.good{background:var(--pill-good);color:var(--good)}.pill.warn{background:var(--pill-warn);color:var(--warn)}.pill.bad{background:var(--pill-bad);color:var(--bad)}
 .banner{display:flex;gap:10px 16px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--pill-warn);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
 .banner p{margin:0;min-width:0}
+.hvin{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}.hvin:focus-visible+.hvpick{outline:2px solid var(--ink)}
 .btn{font:inherit;font-weight:500;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:10px;cursor:pointer}
 .btn:hover{background:var(--soft)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:600}
@@ -3036,7 +3037,7 @@ function hevyCard(){
     '<div class="fa"><button class="btn primary" data-act="hvgo">Importar</button><button class="btn" data-act="hvno">Cancelar</button></div>';
   }
   return '<div class="card"><h3>Importar desde Hevy</h3><p style="margin:0 0 10px;color:var(--ink2)">En Hevy: Perfil → Ajustes → Exportar y borrar datos → Exportar datos. Sube aquí el CSV (workouts.csv).</p>'+
-    '<div class="fa" style="margin-top:0"><input type="file" id="hvfile" accept=".csv,text/csv" aria-label="Archivo CSV de Hevy"></div>'+body+(ui.hvmsg?'<p class="ts" role="status">'+esc(ui.hvmsg)+'</p>':'')+'</div>';
+    '<div class="fa" style="margin-top:0"><input type="file" id="hvfile" accept=".csv,text/csv" aria-label="Archivo CSV de Hevy" class="hvin"><label class="btn primary hvpick" for="hvfile" style="cursor:pointer">📂 Elegir CSV de Hevy</label></div>'+body+(ui.hvmsg?'<p class="ts" role="status">'+esc(ui.hvmsg)+'</p>':'')+'</div>';
 }
 function hevyGo(){
   var h=ui.hv;if(!h)return;snap('antes de importar Hevy');
