@@ -1758,17 +1758,34 @@ function barRead(file){
 }
 function offFetch(code){
   return fetch('https://world.openfoodfacts.org/api/v2/product/'+code+'.json?fields=product_name,brands,quantity,serving_quantity,serving_size,nutriments').then(function(r){return r.json()}).then(function(j){
-    if(!j||j.status!==1||!j.product)return null;var p=j.product,n=p.nutriments||{},num=function(v){v=parseFloat(v);return isFinite(v)?Math.round(v*10)/10:null};
-    var kc=num(n['energy-kcal_100g']);if(kc==null&&n['energy_100g']!=null)kc=Math.round(n['energy_100g']/4.184);
-    var o={name:[p.product_name,p.brands&&p.brands.split(',')[0]].filter(Boolean).join(' · ').slice(0,60),kcal:kc,prot:num(n.proteins_100g),carbs:num(n.carbohydrates_100g),fat:num(n.fat_100g),sugar:num(n.sugars_100g),ug:num(p.serving_quantity)};
-    return (o.kcal==null&&o.prot==null&&o.carbs==null&&o.fat==null)?null:o});
+    return (!j||j.status!==1||!j.product)?null:offMap(j.product)});
+}
+function offMap(p){
+  var n=p.nutriments||{},num=function(v){v=parseFloat(v);return isFinite(v)?Math.round(v*10)/10:null};
+  var kc=num(n['energy-kcal_100g']);if(kc==null&&n['energy_100g']!=null)kc=Math.round(n['energy_100g']/4.184);
+  var o={name:[p.product_name,p.brands&&p.brands.split(',')[0]].filter(Boolean).join(' · ').slice(0,60),kcal:kc,prot:num(n.proteins_100g),carbs:num(n.carbohydrates_100g),fat:num(n.fat_100g),sugar:num(n.sugars_100g),ug:num(p.serving_quantity),code:p.code||''};
+  return (o.kcal==null&&o.prot==null&&o.carbs==null&&o.fat==null)?null:o;
+}
+function offSearch(q){
+  var g=ui.ing;q=String(q||'').trim();if(!g)return;if(q.length<3){g.msg='Escribe al menos 3 letras (por ejemplo «pavo hacendado»).';render();return}
+  g.busy=true;ocrMsg('Buscando «'+q+'» en productos de Mercadona…');
+  return fetch('https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=10&tagtype_0=stores&tag_contains_0=contains&tag_0=mercadona&fields=code,product_name,brands,serving_quantity,nutriments&search_terms='+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(j){
+    var g2=ui.ing;if(!g2)return;g2.busy=false;
+    g2.offr=((j&&j.products)||[]).map(offMap).filter(Boolean).slice(0,6);
+    g2.msg=g2.offr.length?'Elige tu producto de Mercadona (valores por 100 g).':'No he encontrado «'+q+'» en Mercadona. Prueba otra palabra, el código de barras o la foto de la tabla.';
+    render();
+  }).catch(function(){var g3=ui.ing;if(g3){g3.busy=false;g3.msg='No se pudo buscar (¿sin conexión?). Prueba con el código de barras o escribe los datos.'}render()});
+}
+function offPicks(){
+  var g=ui.ing;if(!g||!g.offr||!g.offr.length)return '';
+  return '<div class="chips" style="margin:0 0 12px" role="group" aria-label="Productos encontrados">'+g.offr.map(function(o,i){return '<button type="button" class="chip" data-act="offpick" data-i="'+i+'">'+esc(o.name||'Producto')+' · '+(o.kcal!=null?Math.round(o.kcal)+' kcal':'?')+'</button>'}).join('')+'</div>';
 }
 function offApply(code,o){
   var g=ui.ing;if(!g||!o)return false;
   if(!g.name&&o.name)g.name=o.name;
   ['kcal','prot','carbs','fat','sugar'].forEach(function(k){if(o[k]!=null)g[k]=o[k]});
   g.base=100;g.code=code;if(o.ug&&!g.ug){g.ug=o.ug;if(!g.unit)g.unit='ración'}
-  g.msg='Encontrado en Open Food Facts (código '+code+'): valores por 100 g'+(o.ug?' y ración de '+o.ug+' g':'')+'. Revisa los números con tu envase.';g.busy=false;return true;
+  g.msg='Encontrado en Open Food Facts'+(code?' (código '+code+')':'')+': valores por 100 g'+(o.ug?' y ración de '+o.ug+' g':'')+'. Revisa los números con tu envase.';g.busy=false;return true;
 }
 function barLookup(code){
   var g=ui.ing;code=eanOk(code);if(!g)return;if(!code){g.msg='El código de barras debe tener 8, 12 o 13 cifras.';render();return}
@@ -1809,7 +1826,8 @@ function ingForm(){
   var g=ui.ing;if(!g)return '';
   return '<form class="card" data-form="ingr" autocomplete="off"><h3>'+(g.id?'Editando ingrediente':'Nuevo ingrediente')+'</h3>'+
    '<div id="ingphotos" class="fa" style="margin:0 0 6px"><button type="button" class="btn" data-act="camopen">📷 Hacer foto de la etiqueta</button><input id="ingcam" type="file" accept="image/*" capture="environment" hidden><button type="button" class="btn" data-act="aiopen">🤖 Reconocer alimento</button><label class="btn" for="ingpic">🖼 Elegir imagen</label><input id="ingpic" type="file" accept="image/*" hidden></div>'+
-   '<p class="ts" id="ocrmsg" role="status" aria-live="polite" style="margin:0 0 10px">'+esc(g.msg||'Haz foto al código de barras (se buscan los valores exactos en Open Food Facts) o a la tabla nutricional (valores por 100 g, recta y con buena luz); revisa siempre los números. Si no hay etiqueta, «Reconocer alimento» identifica el alimento por la foto y propone valores medios (la primera vez descarga unos 150 MB; la foto no sale de tu móvil).')+'</p>'+aiPicks()+
+   '<p class="ts" id="ocrmsg" role="status" aria-live="polite" style="margin:0 0 10px">'+esc(g.msg||'Haz foto al código de barras (se buscan los valores exactos en Open Food Facts) o a la tabla nutricional (valores por 100 g, recta y con buena luz); revisa siempre los números. Si no hay etiqueta, «Reconocer alimento» identifica el alimento por la foto y propone valores medios (la primera vez descarga unos 150 MB; la foto no sale de tu móvil).')+'</p>'+offPicks()+aiPicks()+
+   '<div class="fa" style="margin:0 0 10px;align-items:flex-end"><label class="ts" style="flex:1;min-width:180px">Buscar por nombre en Mercadona<input id="ingq" type="search" maxlength="60" placeholder="pavo hacendado" value="'+esc(g.q||'')+'" style="width:100%"></label><button type="button" class="btn" data-act="offsearch">🛒 Buscar</button></div>'+
    '<div class="fa" style="margin:0 0 10px;align-items:flex-end"><label class="ts" style="flex:1;min-width:180px">Código de barras (opcional)<input id="ingcode" data-ing="code" type="text" inputmode="numeric" maxlength="13" placeholder="8402001060045" value="'+esc(g.code||'')+'" style="width:100%"></label><button type="button" class="btn" data-act="barlook">🔎 Buscar en Open Food Facts</button></div>'+
    '<div class="fg">'+
    fld('ingr','name','Ingrediente','text',g.name,'required maxlength="60" placeholder="Pan de molde" data-ing="name"','wide')+
@@ -1856,6 +1874,7 @@ document.addEventListener('change',function(e){
 });
 document.addEventListener('input',function(e){
   var t=e.target;if(!t||!t.dataset)return;
+  if(t.id==='ingq'&&ui.ing){ui.ing.q=t.value;return}
   if(t.dataset.ing&&ui.ing){ui.ing[t.dataset.ing]=t.value;return}
   if(t.dataset.pn&&ui.plato){ui.plato.name=t.value;return}
   if(t.dataset.pf&&ui.plato){var it=ui.plato.items[+t.dataset.pi];if(!it)return;
@@ -2126,6 +2145,8 @@ document.addEventListener('click',function(e){
   else if(a==='sbout'){sbStore(null);dbDoc=null;try{localStorage.removeItem('bitacora-sb-linked')}catch(e){}sbNote='';setSync('Datos guardados solo en este dispositivo');render()}
   else if(a==='camopen'){camOpen('label')}
   else if(a==='aiopen'){camOpen('food')}
+  else if(a==='offsearch'){var qe=$('#ingq');offSearch(qe?qe.value:'')}
+  else if(a==='offpick'){var oo=ui.ing&&ui.ing.offr&&ui.ing.offr[+b.dataset.i];if(oo){offApply(oo.code||'',oo);ui.ing.offr=null;render()}}
   else if(a==='barlook'){var ce=$('#ingcode');barLookup(ce?ce.value:'')}
   else if(a==='aipick'){aiPick(+b.dataset.i)}
   else if(a==='ingnew'){ui.ing=ingBlank();ui.plato=null;render();scrollTo2('form[data-form="ingr"]')}
