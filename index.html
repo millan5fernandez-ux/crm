@@ -1710,7 +1710,7 @@ function labelParse(raw){
   var tokAfter=function(re,skip){for(var i=0;i<lines.length;i++){var m=lines[i].match(re);if(!m)continue;if(skip&&skip.test(lines[i]))continue;var rest=lines[i].slice(m.index+m[0].length),n=rest.match(/(\d+(?:\.\d+)?)/);if(n)return n[1]}return null};
   var kc=t.match(/(\d+(?:\.\d+)?)\s*k\s?c\s?a\s?[li1]/);
   if(kc)out.kcal=Math.round(parseFloat(kc[1]));else{var kj=t.match(/(\d+(?:\.\d+)?)\s*k\s?j/);if(kj)out.kcal=Math.round(parseFloat(kj[1])/4.184)}
-  var tf=tokAfter(/(^|\s)(grasas?|l[ií]pidos|lipidos|fat)\b/,/saturad|monoinsat|poliinsat/),
+  var tf=tokAfter(/(^|[^a-záéíóúñ])(grasas?|l[ií]pidos|lipidos|fat)\b/,/saturad|monoinsat|poliinsat/),
       tc=tokAfter(/(hidratos?\s*de\s*carbono|hidratos?|carbohidratos?|carbohydrates?)/,null),
       tp=tokAfter(/prote[ií]nas?|proteinas|protein/,null),
       ts=tokAfter(/az[uú]cares|azucares|sugars?/,null);
@@ -1751,13 +1751,43 @@ function binImg(blob){return new Promise(function(res,rej){
     for(j=0;j<h;j++){var y0=Math.max(0,j-r),y1=Math.min(h,j+r+1);for(i=0;i<w;i++){var x0=Math.max(0,i-r),x1=Math.min(w,i+r+1),a=(ii[y1*(w+1)+x1]-ii[y0*(w+1)+x1]-ii[y1*(w+1)+x0]+ii[y0*(w+1)+x0])/((x1-x0)*(y1-y0)),v=gr[j*w+i]<a*0.9?0:255,k=(j*w+i)*4;p[k]=p[k+1]=p[k+2]=v}}
     x.putImageData(d,0,0);URL.revokeObjectURL(u);c.toBlob(function(bl){bl?res(bl):rej(new Error('Imagen no válida'))},'image/png')};
   im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('Imagen no válida'))};im.src=u})}
+/* une lecturas de varias pasadas: cada dato sale de la lectura que más datos tiene */
+function mergeParse(texts){
+  var ps=texts.map(function(t){return labelParse(t)}),n=function(p){return ['kcal','prot','carbs','fat','sugar'].filter(function(k){return p[k]!=null}).length};
+  ps.sort(function(a,b){return n(b)-n(a)});var o={};
+  ps.forEach(function(p){Object.keys(p).forEach(function(k){if(o[k]==null&&p[k]!=null)o[k]=p[k]})});
+  return o;
+}
+/* recorte vertical (de x0 a x1 del ancho) ampliado, para aislar la tabla del resto del texto del envase */
+function cropImg(blob,x0,x1){return new Promise(function(res,rej){
+  var u=URL.createObjectURL(blob),im=new Image();
+  im.onload=function(){var sx=Math.round(im.width*x0),sw=Math.round(im.width*(x1-x0)),k=Math.max(1,Math.min(3,1800/Math.max(sw,im.height))),c=document.createElement('canvas');c.width=Math.round(sw*k);c.height=Math.round(im.height*k);
+    var x=c.getContext('2d');x.drawImage(im,sx,0,sw,im.height,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(function(bl){bl?res(bl):rej(new Error('Imagen no válida'))},'image/png')};
+  im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('Imagen no válida'))};im.src=u})}
 function ocrMsg(t){if(ui.ing)ui.ing.msg=t;var e=$('#ocrmsg');if(e)e.textContent=t}
 /* Código de barras + Open Food Facts (base de datos abierta y gratuita) */
 function eanOk(c){c=String(c||'').replace(/\D/g,'');if(!/^(\d{8}|\d{12}|\d{13})$/.test(c))return '';return c}
+/* Recortes de la foto donde suele estar el código (abajo), por si en la imagen completa no lo encuentra */
+var BAR_CROPS=[[0,0,1,1],[0,.5,1,.5],[0,.65,1,.35],[.4,.55,.6,.45],[0,.55,.6,.45],[0,0,1,.5],[.5,.5,.5,.5],[0,.8,1,.2]];
+function barZx(im){
+  var hints=new Map();hints.set(ZXing.DecodeHintType.TRY_HARDER,true);hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.UPC_A,ZXing.BarcodeFormat.UPC_E]);
+  var rd=new ZXing.MultiFormatReader();rd.setHints(hints);
+  for(var i=0;i<BAR_CROPS.length;i++){
+    var c=BAR_CROPS[i],sx=Math.round(c[0]*im.width),sy=Math.round(c[1]*im.height),sw=Math.round(c[2]*im.width),sh=Math.round(c[3]*im.height);
+    
+    var ks=sw<1000?[1,2.5]:[1];
+    for(var q=0;q<ks.length;q++){
+      var k=ks[q],cv=document.createElement('canvas');cv.width=Math.round(sw*k);cv.height=Math.round(sh*k);cv.getContext('2d').drawImage(im,sx,sy,sw,sh,0,0,cv.width,cv.height);
+      try{var r=rd.decode(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(cv))));var code=eanOk(r.getText());if(code)return code}catch(e){}
+    }
+  }
+  return '';
+}
 function barRead(file){
   if(window.CRM_BARCODE)return Promise.resolve(window.CRM_BARCODE(file)).then(eanOk);
-  var url=URL.createObjectURL(file),done=function(v){URL.revokeObjectURL(url);return eanOk(v)};
-  var viaZx=function(){return loadScript('https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js').then(function(){return new ZXing.BrowserMultiFormatReader().decodeFromImageUrl(url)}).then(function(r){return done(r.getText())})};
+  var url=URL.createObjectURL(file),img=new Promise(function(res,rej){var im=new Image();im.onload=function(){res(im)};im.onerror=function(){rej(new Error('img'))};im.src=url});
+  var done=function(v){URL.revokeObjectURL(url);return eanOk(v)};
+  var viaZx=function(){return loadScript('https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js').then(function(){return img}).then(function(im){return done(barZx(im))})};
   if(window.BarcodeDetector){
     return createImageBitmap(file).then(function(bm){return new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']}).detect(bm)}).then(function(r){var c=r&&r[0]&&eanOk(r[0].rawValue);return c?done(c):viaZx()}).catch(function(){return viaZx().catch(function(){return done('')})});
   }
@@ -1819,8 +1849,12 @@ function ocrText(file){
     return Tesseract.recognize(img,'spa',cfg).then(function(r1){
       var t1=(r1&&r1.data&&r1.data.text)||'';if(cnt(t1)>=4)return {data:{text:t1}};
       ocrMsg('Segunda pasada con más contraste…');
-      return binImg(img).then(function(b2){return Tesseract.recognize(b2,'spa',cfg)}).then(function(r2){var t2=(r2&&r2.data&&r2.data.text)||'';return {data:{text:cnt(t2)>cnt(t1)?t2:t1}}}).catch(function(){return {data:{text:t1}}})})}).then(function(r){
-    var txt=(r&&r.data&&r.data.text)||'',o=labelParse(txt),g2=ui.ing;if(!g2)return;g2.busy=false;g2.raw=txt;
+      var best=t1,all=[t1],pass=function(b){return Tesseract.recognize(b,'spa',cfg).then(function(r){var t=(r&&r.data&&r.data.text)||'';all.push(t);if(cnt(t)>cnt(best))best=t})};
+      return binImg(img).then(pass).catch(function(){}).then(function(){
+        if(cnt(best)>=4)return;ocrMsg('Tercera pasada: leyendo la tabla por zonas…');
+        return cropImg(img,.42,1).then(pass).catch(function(){}).then(function(){if(cnt(best)>=4)return;return cropImg(img,0,.58).then(pass).catch(function(){})})
+      }).then(function(){return {data:{text:best},merged:mergeParse(all)}})})}).then(function(r){
+    var txt=(r&&r.data&&r.data.text)||'',o=r.merged||labelParse(txt),g2=ui.ing;if(!g2)return;g2.busy=false;g2.raw=txt;
     ['kcal','prot','carbs','fat','sugar'].forEach(function(k){if(o[k]!=null)g2[k]=o[k]});
     if(o.base)g2.base=o.base;
     if(o.ug&&!g2.ug){g2.ug=o.ug;if(!g2.unit)g2.unit=o.unit}
