@@ -1815,7 +1815,11 @@ function offSearch(q){
 }
 function offPicks(){
   var g=ui.ing;if(!g||!g.offr||!g.offr.length)return '';
-  return '<div class="chips" style="margin:0 0 12px" role="group" aria-label="Productos encontrados">'+g.offr.map(function(o,i){return '<button type="button" class="chip" data-act="offpick" data-i="'+i+'">'+esc(o.name||'Producto')+' · '+(o.kcal!=null?Math.round(o.kcal)+' kcal':'?')+'</button>'}).join('')+'</div>';
+  return '<div style="display:flex;flex-direction:column;gap:8px;margin:0 0 12px" role="group" aria-label="Productos encontrados">'+g.offr.map(function(o,i){
+    var nm=(o.name||'').split(' · ')[0],lk='';
+    if(o.code)lk+='<a class="ts" href="https://world.openfoodfacts.org/product/'+encodeURIComponent(o.code)+'" target="_blank" rel="noopener">Open Food Facts ↗</a>';
+    if(nm)lk+=(lk?' · ':'')+'<a class="ts" href="https://tienda.mercadona.es/search-results?query='+encodeURIComponent(nm)+'" target="_blank" rel="noopener">Mercadona ↗</a>';
+    return '<div style="display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center"><button type="button" class="chip" data-act="offpick" data-i="'+i+'">'+esc(o.name||'Producto')+' · '+(o.kcal!=null?Math.round(o.kcal)+' kcal':'?')+'</button><span>'+lk+'</span></div>'}).join('')+'</div>';
 }
 function offApply(code,o){
   var g=ui.ing;if(!g||!o)return false;
