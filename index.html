@@ -757,12 +757,6 @@ body.drawer-open #dayflow{display:none}
 .tour-dots b{flex:1;height:6px;background:var(--soft);border:1px solid var(--line)}
 .tour-dots b.ok{background:var(--good)}.tour-dots b.cur{background:var(--accent)}
 @media (max-width:720px){.dfg{grid-template-columns:1fr}}
-#camov{position:fixed;inset:0;z-index:1000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center}
-#camov video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-#camov .camgd{position:relative;width:min(88vw,520px);aspect-ratio:3/4;max-height:68vh;border:3px solid #fff;box-shadow:0 0 0 100vmax rgba(0,0,0,.55);pointer-events:none}
-#camov .camtip{position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;right:16px;margin:0;color:#fff;text-align:center;font:600 14px var(--font-body);text-shadow:0 1px 3px #000}
-#camov .camact{position:absolute;left:0;right:0;bottom:max(20px,env(safe-area-inset-bottom));display:flex;gap:12px;justify-content:center}
-#camov .camact .btn{min-width:130px;min-height:48px}
 </style>
 <div id="app">
   <header id="top">
@@ -1681,7 +1675,6 @@ LISTS.metas=function(){
 /* ---------- render ---------- */
 
 /* ===== Ingredientes, platos y lectura de etiquetas ===== */
-var TESS_SRC='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.3/tesseract.min.js';
 function scrollTo2(sel){setTimeout(function(){var f=$(sel);if(f&&f.scrollIntoView)f.scrollIntoView({block:'start',behavior:'smooth'})},80)}
 function ingBlank(){return {id:'',name:'',kcal:'',prot:'',carbs:'',fat:'',sugar:'',base:100,unit:'',ug:'',raw:'',msg:'',busy:false,del:false}}
 function r1(n){return Math.round(n*10)/10}
@@ -1695,186 +1688,9 @@ function platoMac(p){
   });
   return {kcal:Math.round(t.kcal),prot:r1(t.prot),carbs:r1(t.carbs),fat:r1(t.fat),sugar:r1(t.sugar),miss:t.miss};
 }
-/* Lectura de la tabla nutricional (texto que devuelve el OCR) */
-function ocrCands(tok){
-  var set=[],add=function(x){var v=parseFloat(x);if(isFinite(v)&&v>=0&&v<=100&&set.indexOf(v)<0)set.push(v)};
-  var bases=[tok];if(/9$/.test(tok)&&tok.length>1)bases.push(tok.slice(0,-1));
-  bases.forEach(function(x){add(x)});
-  bases.forEach(function(x){if(/^\d{2,}$/.test(x))add(x.slice(0,-1)+'.'+x.slice(-1))});
-  var dec=function(v){var m=String(v).split('.')[1];return m?m.length:0};
-  return set.map(function(v,i){return {v:v,i:i}}).sort(function(a,b){return (dec(a.v)>1)-(dec(b.v)>1)||a.i-b.i}).map(function(o){return o.v});
-}
-function labelParse(raw){
-  var t=String(raw||'').toLowerCase().replace(/\r/g,'').replace(/(\d)\s*[,·]\s*(\d)/g,'$1.$2');
-  var lines=t.split('\n').map(function(l){return l.trim()}).filter(Boolean),out={};
-  var tokAfter=function(re,skip){for(var i=0;i<lines.length;i++){var m=lines[i].match(re);if(!m)continue;if(skip&&skip.test(lines[i]))continue;var rest=lines[i].slice(m.index+m[0].length),n=rest.match(/(\d+(?:\.\d+)?)/);if(n)return n[1]}return null};
-  var kc=t.match(/(\d+(?:\.\d+)?)\s*k\s?c\s?a\s?[li1]/);
-  if(kc)out.kcal=Math.round(parseFloat(kc[1]));else{var kj=t.match(/(\d+(?:\.\d+)?)\s*k\s?j/);if(kj)out.kcal=Math.round(parseFloat(kj[1])/4.184)}
-  var tf=tokAfter(/(^|[^a-záéíóúñ])(grasas?|l[ií]pidos|lipidos|fat)\b/,/saturad|monoinsat|poliinsat/),
-      tc=tokAfter(/(hidratos?\s*de\s*carbono|hidratos?|carbohidratos?|carbohydrates?)/,null),
-      tp=tokAfter(/prote[ií]nas?|proteinas|protein/,null),
-      ts=tokAfter(/az[uú]cares|azucares|sugars?/,null);
-  var cf=tf?ocrCands(tf):[],cc=tc?ocrCands(tc):[],cp=tp?ocrCands(tp):[];
-  /* el OCR suele leer la «g» como un 9 y perder la coma: se elige la lectura cuyas kcal cuadran con las de la etiqueta */
-  var best=null;
-  (cp.length?cp:[null]).forEach(function(p){(cc.length?cc:[null]).forEach(function(c){(cf.length?cf:[null]).forEach(function(f){
-    var sc=out.kcal!=null?Math.abs(4*(p||0)+4*(c||0)+9*(f||0)-out.kcal):0;
-    if(!best||sc<best.sc-1.5)best={sc:sc,p:p,c:c,f:f}})})});
-  if(best){if(best.p!=null)out.prot=best.p;if(best.c!=null)out.carbs=best.c;if(best.f!=null)out.fat=best.f}
-  if(ts){var cs=ocrCands(ts).filter(function(v){return out.carbs==null||v<=out.carbs});if(cs.length)out.sugar=cs[0]}
-  var b=t.match(/por\s*(\d{2,3})\s*(?:g|ml)\b/);if(b)out.base=parseFloat(b[1]);
-  /* peso de la porción: «1 rebanada (30 g)», «30 g (2 rebanadas)», «por loncha 15 g»… */
-  var U='rebanadas?|lonchas?|lonchitas?|rodajas?|galletas?|barritas?|filetes?|tostadas?|porciones?|raciones?|unidades?|huevos?|piezas?';
-  var m1=t.match(new RegExp('(\\d+)?\\s*('+U+')[^0-9\\n]{0,14}?\\(?\\s*(\\d+(?:\\.\\d+)?)\\s*g\\b')),m2=t.match(new RegExp('(\\d+(?:\\.\\d+)?)\\s*g\\s*\\(?\\s*(\\d+)?\\s*('+U+')\\b'));
-  var pu=null,pg=null,pn=1;
-  if(m1){pu=m1[2];pg=parseFloat(m1[3]);pn=parseInt(m1[1],10)||1}else if(m2){pu=m2[3];pg=parseFloat(m2[1]);pn=parseInt(m2[2],10)||1}
-  if(pu&&pg){var one=pg/pn;if(one>=2&&one<=250){out.ug=Math.round(one*10)/10;out.unit=pu.replace(/s$/,'').replace(/^(porcione|racione|unidade)$/,function(x){return x.replace(/e$/,'')})}}
-  return out;
-}
-function loadScript(src){return new Promise(function(res,rej){var el=document.createElement('script');el.src=src;el.onload=res;el.onerror=function(){rej(new Error('No se pudo descargar el lector de texto'))};document.head.appendChild(el)})}
-function prepImg(file){return new Promise(function(res,rej){
-  var u=URL.createObjectURL(file),im=new Image();
-  im.onload=function(){var mx=Math.max(im.width,im.height),sc=mx<1400?Math.min(4,1600/mx):Math.min(1,1800/mx),c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
-    var x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);
-    var d=x.getImageData(0,0,c.width,c.height),p=d.data;
-    for(var i=0;i<p.length;i+=4){var g=.299*p[i]+.587*p[i+1]+.114*p[i+2];g=(g-128)*1.35+128;p[i]=p[i+1]=p[i+2]=g<0?0:g>255?255:g}
-    x.putImageData(d,0,0);URL.revokeObjectURL(u);c.toBlob(function(bl){bl?res(bl):rej(new Error('Imagen no válida'))},'image/png')};
-  im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('No se pudo abrir la imagen'))};im.src=u})}
-/* binarización adaptativa (umbral local) para etiquetas con brillos o fondo de color */
-function binImg(blob){return new Promise(function(res,rej){
-  var u=URL.createObjectURL(blob),im=new Image();
-  im.onload=function(){var w=im.width,h=im.height,c=document.createElement('canvas');c.width=w;c.height=h;var x=c.getContext('2d');x.drawImage(im,0,0);
-    var d=x.getImageData(0,0,w,h),p=d.data,gr=new Float32Array(w*h),ii=new Float64Array((w+1)*(h+1)),i,j;
-    for(i=0;i<w*h;i++)gr[i]=p[i*4];
-    for(j=0;j<h;j++){var rs=0;for(i=0;i<w;i++){rs+=gr[j*w+i];ii[(j+1)*(w+1)+i+1]=ii[j*(w+1)+i+1]+rs}}
-    var r=Math.max(12,Math.round(Math.min(w,h)/24));
-    for(j=0;j<h;j++){var y0=Math.max(0,j-r),y1=Math.min(h,j+r+1);for(i=0;i<w;i++){var x0=Math.max(0,i-r),x1=Math.min(w,i+r+1),a=(ii[y1*(w+1)+x1]-ii[y0*(w+1)+x1]-ii[y1*(w+1)+x0]+ii[y0*(w+1)+x0])/((x1-x0)*(y1-y0)),v=gr[j*w+i]<a*0.9?0:255,k=(j*w+i)*4;p[k]=p[k+1]=p[k+2]=v}}
-    x.putImageData(d,0,0);URL.revokeObjectURL(u);c.toBlob(function(bl){bl?res(bl):rej(new Error('Imagen no válida'))},'image/png')};
-  im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('Imagen no válida'))};im.src=u})}
-/* une lecturas de varias pasadas: cada dato sale de la lectura que más datos tiene */
-function mergeParse(texts){
-  var ps=texts.map(function(t){return labelParse(t)}),n=function(p){return ['kcal','prot','carbs','fat','sugar'].filter(function(k){return p[k]!=null}).length};
-  ps.sort(function(a,b){return n(b)-n(a)});var o={};
-  ps.forEach(function(p){Object.keys(p).forEach(function(k){if(o[k]==null&&p[k]!=null)o[k]=p[k]})});
-  return o;
-}
-/* recorte vertical (de x0 a x1 del ancho) ampliado, para aislar la tabla del resto del texto del envase */
-function cropImg(blob,x0,x1){return new Promise(function(res,rej){
-  var u=URL.createObjectURL(blob),im=new Image();
-  im.onload=function(){var sx=Math.round(im.width*x0),sw=Math.round(im.width*(x1-x0)),k=Math.max(1,Math.min(3,1800/Math.max(sw,im.height))),c=document.createElement('canvas');c.width=Math.round(sw*k);c.height=Math.round(im.height*k);
-    var x=c.getContext('2d');x.drawImage(im,sx,0,sw,im.height,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(function(bl){bl?res(bl):rej(new Error('Imagen no válida'))},'image/png')};
-  im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('Imagen no válida'))};im.src=u})}
-function ocrMsg(t){if(ui.ing)ui.ing.msg=t;var e=$('#ocrmsg');if(e)e.textContent=t}
-/* Código de barras + Open Food Facts (base de datos abierta y gratuita) */
-function eanOk(c){c=String(c||'').replace(/\D/g,'');if(!/^(\d{8}|\d{12}|\d{13})$/.test(c))return '';return c}
-/* Recortes de la foto donde suele estar el código (abajo), por si en la imagen completa no lo encuentra */
-var BAR_CROPS=[[0,0,1,1],[0,.5,1,.5],[0,.65,1,.35],[.4,.55,.6,.45],[0,.55,.6,.45],[0,0,1,.5],[.5,.5,.5,.5],[0,.8,1,.2]];
-function barZx(im){
-  var hints=new Map();hints.set(ZXing.DecodeHintType.TRY_HARDER,true);hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.UPC_A,ZXing.BarcodeFormat.UPC_E]);
-  var rd=new ZXing.MultiFormatReader();rd.setHints(hints);
-  for(var i=0;i<BAR_CROPS.length;i++){
-    var c=BAR_CROPS[i],sx=Math.round(c[0]*im.width),sy=Math.round(c[1]*im.height),sw=Math.round(c[2]*im.width),sh=Math.round(c[3]*im.height);
-    
-    var ks=sw<1000?[1,2.5]:[1];
-    for(var q=0;q<ks.length;q++){
-      var k=ks[q],cv=document.createElement('canvas');cv.width=Math.round(sw*k);cv.height=Math.round(sh*k);cv.getContext('2d').drawImage(im,sx,sy,sw,sh,0,0,cv.width,cv.height);
-      try{var r=rd.decode(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(cv))));var code=eanOk(r.getText());if(code)return code}catch(e){}
-    }
-  }
-  return '';
-}
-function barRead(file){
-  if(window.CRM_BARCODE)return Promise.resolve(window.CRM_BARCODE(file)).then(eanOk);
-  var url=URL.createObjectURL(file),img=new Promise(function(res,rej){var im=new Image();im.onload=function(){res(im)};im.onerror=function(){rej(new Error('img'))};im.src=url});
-  var done=function(v){URL.revokeObjectURL(url);return eanOk(v)};
-  var viaZx=function(){return loadScript('https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js').then(function(){return img}).then(function(im){return done(barZx(im))})};
-  if(window.BarcodeDetector){
-    return createImageBitmap(file).then(function(bm){return new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']}).detect(bm)}).then(function(r){var c=r&&r[0]&&eanOk(r[0].rawValue);return c?done(c):viaZx()}).catch(function(){return viaZx().catch(function(){return done('')})});
-  }
-  return viaZx().catch(function(){return done('')});
-}
-function offFetch(code){
-  return fetch('https://world.openfoodfacts.org/api/v2/product/'+code+'.json?fields=product_name,brands,quantity,serving_quantity,serving_size,nutriments').then(function(r){return r.json()}).then(function(j){
-    return (!j||j.status!==1||!j.product)?null:offMap(j.product)});
-}
-function offMap(p){
-  var n=p.nutriments||{},num=function(v){v=parseFloat(v);return isFinite(v)?Math.round(v*10)/10:null};
-  var kc=num(n['energy-kcal_100g']);if(kc==null&&n['energy_100g']!=null)kc=Math.round(n['energy_100g']/4.184);
-  var o={name:[p.product_name,p.brands&&p.brands.split(',')[0]].filter(Boolean).join(' · ').slice(0,60),kcal:kc,prot:num(n.proteins_100g),carbs:num(n.carbohydrates_100g),fat:num(n.fat_100g),sugar:num(n.sugars_100g),ug:num(p.serving_quantity),code:p.code||''};
-  return (o.kcal==null&&o.prot==null&&o.carbs==null&&o.fat==null)?null:o;
-}
-function offSearch(q){
-  var g=ui.ing;q=String(q||'').trim();if(!g)return;if(q.length<3){g.msg='Escribe al menos 3 letras (por ejemplo «pavo hacendado»).';render();return}
-  g.busy=true;g.offr=null;g.q=q;ocrMsg('Buscando «'+q+'» en productos de Mercadona…');render();
-  return fetch('https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=10&tagtype_0=stores&tag_contains_0=contains&tag_0=mercadona&fields=code,product_name,brands,serving_quantity,nutriments&search_terms='+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(j){
-    var g2=ui.ing;if(!g2)return;g2.busy=false;
-    g2.offr=((j&&j.products)||[]).map(offMap).filter(Boolean).slice(0,6);
-    g2.msg=g2.offr.length?'Elige tu producto de Mercadona (valores por 100 g).':'No he encontrado «'+q+'» en Mercadona. Prueba otra palabra, el código de barras o la foto de la tabla.';
-    render();
-  }).catch(function(){var g3=ui.ing;if(g3){g3.busy=false;g3.msg='No se pudo buscar (¿sin conexión?). Prueba con el código de barras o escribe los datos.'}render()});
-}
-document.addEventListener('keydown',function(e){var t=e.target;if(t&&(t.id==='ingq'||t.id==='ingcode')&&e.key==='Enter'){e.preventDefault();if(t.id==='ingq')offSearch(t.value);else barLookup(t.value)}});
-function offPicks(){
-  var g=ui.ing;if(!g||!g.offr||!g.offr.length)return '';
-  return '<div style="display:flex;flex-direction:column;gap:8px;margin:0 0 12px" role="group" aria-label="Productos encontrados">'+g.offr.map(function(o,i){
-    var nm=(o.name||'').split(' · ')[0],lk='';
-    if(o.code)lk+='<a class="ts" href="https://world.openfoodfacts.org/product/'+encodeURIComponent(o.code)+'" target="_blank" rel="noopener">Open Food Facts ↗</a>';
-    if(nm)lk+=(lk?' · ':'')+'<a class="ts" href="https://tienda.mercadona.es/search-results?query='+encodeURIComponent(nm)+'" target="_blank" rel="noopener">Mercadona ↗</a>';
-    return '<div style="display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center"><button type="button" class="chip" data-act="offpick" data-i="'+i+'">'+esc(o.name||'Producto')+' · '+(o.kcal!=null?Math.round(o.kcal)+' kcal':'?')+'</button><span>'+lk+'</span></div>'}).join('')+'</div>';
-}
-function offApply(code,o){
-  var g=ui.ing;if(!g||!o)return false;
-  if(!g.name&&o.name)g.name=o.name;
-  ['kcal','prot','carbs','fat','sugar'].forEach(function(k){if(o[k]!=null)g[k]=o[k]});
-  g.base=100;g.code=code;if(o.ug&&!g.ug){g.ug=o.ug;if(!g.unit)g.unit='ración'}
-  g.msg='Encontrado en Open Food Facts'+(code?' (código '+code+')':'')+': valores por 100 g'+(o.ug?' y ración de '+o.ug+' g':'')+'. Revisa los números con tu envase.';g.busy=false;return true;
-}
-function barLookup(code){
-  var g=ui.ing;code=eanOk(code);if(!g)return;if(!code){g.msg='El código de barras debe tener 8, 12 o 13 cifras.';render();return}
-  g.busy=true;ocrMsg('Buscando '+code+' en Open Food Facts…');
-  return offFetch(code).then(function(o){var g2=ui.ing;if(!g2)return;g2.busy=false;if(!offApply(code,o))g2.msg='El código '+code+' no está en Open Food Facts (o sin datos de nutrición). Haz foto de la tabla o escribe los datos.';render();scrollTo2('form[data-form="ingr"]')}).catch(function(){var g3=ui.ing;if(g3){g3.busy=false;g3.msg='No se pudo consultar Open Food Facts (¿sin conexión?). Haz foto de la tabla o escribe los datos.'}render()});
-}
-function ocrRun(file){
-  var g=ui.ing;if(!g||g.busy)return;g.busy=true;ocrMsg('Buscando el código de barras…');
-  return barRead(file).then(function(code){
-    if(!code)return null;ocrMsg('Código '+code+' detectado; consultando Open Food Facts…');
-    return offFetch(code).then(function(o){return o?{code:code,o:o}:null}).catch(function(){return null});
-  }).then(function(hit){
-    var g1=ui.ing;if(!g1)return;
-    if(hit&&offApply(hit.code,hit.o)){render();scrollTo2('form[data-form="ingr"]');return}
-    g1.busy=false;return ocrText(file);
-  });
-}
-function ocrText(file){
-  var g=ui.ing;if(!g||g.busy)return;g.busy=true;ocrMsg('Leyendo la etiqueta… la primera vez descarga el lector de texto (unos segundos).');
-  var p=$('#ingphotos');if(p)p.setAttribute('aria-busy','true');
-  return (window.Tesseract?Promise.resolve():loadScript(TESS_SRC)).then(function(){return prepImg(file)}).then(function(img){
-    var cfg=Object.assign({},window.CRM_OCR||{});cfg.logger=function(m){if(m&&m.status==='recognizing text'&&ui.ing)ocrMsg('Leyendo… '+Math.round(m.progress*100)+'%')};
-    var cnt=function(t){var q=labelParse(t);return ['kcal','prot','carbs','fat','sugar'].filter(function(k){return q[k]!=null}).length};
-    return Tesseract.recognize(img,'spa',cfg).then(function(r1){
-      var t1=(r1&&r1.data&&r1.data.text)||'';if(cnt(t1)>=4)return {data:{text:t1}};
-      ocrMsg('Segunda pasada con más contraste…');
-      var best=t1,all=[t1],pass=function(b){return Tesseract.recognize(b,'spa',cfg).then(function(r){var t=(r&&r.data&&r.data.text)||'';all.push(t);if(cnt(t)>cnt(best))best=t})};
-      return binImg(img).then(pass).catch(function(){}).then(function(){
-        if(cnt(best)>=4)return;ocrMsg('Tercera pasada: leyendo la tabla por zonas…');
-        return cropImg(img,.42,1).then(pass).catch(function(){}).then(function(){if(cnt(best)>=4)return;return cropImg(img,0,.58).then(pass).catch(function(){})})
-      }).then(function(){return {data:{text:best},merged:mergeParse(all)}})})}).then(function(r){
-    var txt=(r&&r.data&&r.data.text)||'',o=r.merged||labelParse(txt),g2=ui.ing;if(!g2)return;g2.busy=false;g2.raw=txt;
-    ['kcal','prot','carbs','fat','sugar'].forEach(function(k){if(o[k]!=null)g2[k]=o[k]});
-    if(o.base)g2.base=o.base;
-    if(o.ug&&!g2.ug){g2.ug=o.ug;if(!g2.unit)g2.unit=o.unit}
-    var miss=['kcal','prot','carbs','fat','sugar'].filter(function(k){return o[k]==null}).map(function(k){return {kcal:'kcal',prot:'proteínas',carbs:'hidratos',fat:'grasas',sugar:'azúcares'}[k]});
-    var pr=o.ug?' Peso por '+o.unit+': '+o.ug+' g (de la etiqueta; compruébalo).':'';g2.msg=(miss.length===5?'No he podido leer ningún dato. Prueba con otra foto más recta y con buena luz, o escríbelos a mano.':'Leído. Revisa los números con la etiqueta antes de guardar.'+(miss.length?' Sin encontrar: '+miss.join(', ')+'.':'')+pr);
-    render();scrollTo2('form[data-form="ingr"]');
-  }).catch(function(e){var g3=ui.ing;if(g3){g3.busy=false;g3.msg='No se pudo leer la foto ('+(e&&e.message?e.message:'error')+'). Puede que aquí no haya conexión con el lector de texto: escribe los datos a mano.'}render()});
-}
 function ingForm(){
   var g=ui.ing;if(!g)return '';
   return '<form class="card" data-form="ingr" autocomplete="off"><h3>'+(g.id?'Editando ingrediente':'Nuevo ingrediente')+'</h3>'+
-   '<div id="ingphotos" class="fa" style="margin:0 0 6px"><button type="button" class="btn" data-act="camopen">📷 Hacer foto de la etiqueta</button><input id="ingcam" type="file" accept="image/*" capture="environment" hidden><label class="btn" for="ingpic">🖼 Elegir imagen</label><input id="ingpic" type="file" accept="image/*" hidden></div>'+
-   '<p class="ts" id="ocrmsg" role="status" aria-live="polite" style="margin:0 0 10px">'+esc(g.msg||'Haz foto al código de barras (se buscan los valores exactos en Open Food Facts) o a la tabla nutricional (valores por 100 g, recta y con buena luz); revisa siempre los números.')+'</p>'+offPicks()+
-   '<div class="fa" style="margin:0 0 10px;align-items:flex-end"><label class="ts" style="flex:1;min-width:180px">Buscar por nombre en Mercadona<input id="ingq" type="search" maxlength="60" placeholder="pavo hacendado" value="'+esc(g.q||'')+'" style="width:100%"></label><button type="button" class="btn" data-act="offsearch">🛒 Buscar</button></div>'+
-   '<div class="fa" style="margin:0 0 10px;align-items:flex-end"><label class="ts" style="flex:1;min-width:180px">Código de barras (opcional)<input id="ingcode" data-ing="code" type="text" inputmode="numeric" maxlength="13" placeholder="8402001060045" value="'+esc(g.code||'')+'" style="width:100%"></label><button type="button" class="btn" data-act="barlook">🔎 Buscar en Open Food Facts</button></div>'+
    '<div class="fg">'+
    fld('ingr','name','Ingrediente','text',g.name,'required maxlength="60" placeholder="Pan de molde" data-ing="name"','wide')+
    fld('ingr','base','La tabla es por (g)','number',g.base,'min="1" step="any" inputmode="decimal" data-ing="base"')+
@@ -1885,7 +1701,7 @@ function ingForm(){
    fld('ingr','sugar','Azúcares (g)','number',g.sugar,'min="0" step="any" inputmode="decimal" data-ing="sugar"')+
    fld('ingr','unit','Unidad (opcional)','text',g.unit,'maxlength="24" placeholder="rebanada" data-ing="unit"')+
    fld('ingr','ug','Gramos por unidad','number',g.ug,'min="0" step="any" inputmode="decimal" placeholder="30" data-ing="ug"')+
-   '</div>'+(g.raw?'<details style="margin-top:10px"><summary class="ts">Texto leído de la foto</summary><pre class="ts" style="white-space:pre-wrap;margin:6px 0 0">'+esc(g.raw)+'</pre></details>':'')+
+   '</div>'+
    '<div class="fa"><button class="btn primary" type="submit"'+(g.busy?' disabled':'')+'>'+(g.id?'Guardar cambios':'Guardar ingrediente')+'</button><button class="btn" type="button" data-act="ingcancel">Cancelar</button>'+(g.id?'<button class="btn" type="button" data-act="ingdel">'+(g.del?'¿Seguro? Borrar':'Borrar')+'</button>':'')+'</div></form>';
 }
 function platoRow(it,i){
@@ -1914,13 +1730,8 @@ function ingBox(){
   var ih=li.length?'<p class="grp" style="margin:14px 0 8px">Mis ingredientes · por 100 g · toca para editar</p><div class="chips">'+li.map(function(x){return '<button type="button" class="chip" data-act="ingedit" data-id="'+esc(x.id)+'">'+esc(x.name)+' · '+num(x.kcal)+' kcal'+(x.ug?' · '+num(x.ug)+' g/'+esc(x.unit||'ud'):'')+'</button>'}).join('')+'</div>':'<p class="empty" style="margin-top:12px">Guarda aquí tus ingredientes (pan, pavo, queso…) con su tabla nutricional; luego monta platos como «sándwich mixto = 2 rebanadas + 2 lonchas» y se calculan los macros solos.</p>';
   return head+plh+ih+'</div>'+ingForm()+platoForm();
 }
-document.addEventListener('change',function(e){
-  var t=e.target;if(!t||!t.id)return;
-  if((t.id==='ingcam'||t.id==='ingpic')&&t.files&&t.files[0]){var fl=t.files[0];t.value='';ocrRun(fl)}
-});
 document.addEventListener('input',function(e){
   var t=e.target;if(!t||!t.dataset)return;
-  if(t.id==='ingq'&&ui.ing){ui.ing.q=t.value;return}
   if(t.dataset.ing&&ui.ing){ui.ing[t.dataset.ing]=t.value;return}
   if(t.dataset.pn&&ui.plato){ui.plato.name=t.value;return}
   if(t.dataset.pf&&ui.plato){var it=ui.plato.items[+t.dataset.pi];if(!it)return;
@@ -1934,38 +1745,6 @@ document.addEventListener('change',function(e){
 });
 
 
-/* ===== Cámara del móvil para leer etiquetas ===== */
-var camS=null,camEl=null;
-function camClose(){
-  if(camS){camS.getTracks().forEach(function(t){t.stop()});camS=null}
-  if(camEl){camEl.remove();camEl=null}
-  document.removeEventListener('keydown',camKey);
-}
-function camKey(e){if(e.key==='Escape')camClose()}
-function camFallback(msg){camClose();if(ui.ing){ui.ing.msg=msg;var m=$('#ocrmsg');if(m)m.textContent=msg}var f=$('#ingcam');if(f)f.click()}
-var camMode='label';
-function camOpen(mode){
-  if(!ui.ing||camEl)return;camMode=mode||'label';
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.isSecureContext){camFallback('Este navegador no deja abrir la cámara aquí: se abrirá la cámara del móvil para hacer la foto.');return}
-  camEl=document.createElement('div');camEl.id='camov';camEl.setAttribute('role','dialog');camEl.setAttribute('aria-modal','true');camEl.setAttribute('aria-label','Cámara para leer la etiqueta');
-  camEl.innerHTML='<video id="camvid" autoplay playsinline muted></video><div class="camgd" aria-hidden="true"></div><p class="camtip">Encaja el código de barras o la tabla nutricional dentro del marco, recta y con buena luz</p><div class="camact"><button type="button" class="btn" id="camx">Cerrar</button><button type="button" class="btn primary" id="camsh" disabled>Capturar</button></div>';
-  document.body.appendChild(camEl);document.addEventListener('keydown',camKey);
-  $('#camx').onclick=camClose;
-  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false}).then(function(st){
-    if(!camEl){st.getTracks().forEach(function(t){t.stop()});return}
-    camS=st;var v=$('#camvid');v.srcObject=st;
-    try{var tr=st.getVideoTracks()[0],cp=tr.getCapabilities&&tr.getCapabilities();if(cp&&cp.focusMode&&cp.focusMode.indexOf('continuous')>-1)tr.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(function(){})}catch(e){}
-    var sh=$('#camsh');sh.disabled=false;sh.focus();
-    sh.onclick=function(){
-      var w=v.videoWidth,h=v.videoHeight;if(!w||!h)return;
-      var k=Math.max(innerWidth/w,innerHeight/h),sw=Math.round(innerWidth/k),sh2=Math.round(innerHeight/k),sx=Math.round((w-sw)/2),sy=Math.round((h-sh2)/2),c=document.createElement('canvas');c.width=sw;c.height=sh2;c.getContext('2d').drawImage(v,sx,sy,sw,sh2,0,0,sw,sh2);
-      c.toBlob(function(bl){camClose();if(bl)ocrRun(bl)},'image/jpeg',.92);
-    };
-  }).catch(function(err){
-    var n=err&&err.name;
-    camFallback(n==='NotAllowedError'||n==='SecurityError'?'No hay permiso para usar la cámara. Actívalo en los ajustes del navegador, o haz la foto con la cámara del móvil.':'No se pudo abrir la cámara: se abrirá la cámara del móvil para hacer la foto.');
-  });
-}
 /* ===== Tu día: pasos y recorrido guiado ===== */
 var MOM=['Mañana','Tarde','Noche'];
 function dayRec(){var t=today();return S.cuerpo.filter(function(c){return c.date===t})[0]||{}}
@@ -2112,10 +1891,6 @@ document.addEventListener('click',function(e){
   else if(a==='sbin'){sbAuth('in')}
   else if(a==='sbup'){sbAuth('up')}
   else if(a==='sbout'){sbStore(null);dbDoc=null;try{localStorage.removeItem('bitacora-sb-linked')}catch(e){}sbNote='';setSync('Datos guardados solo en este dispositivo');render()}
-  else if(a==='camopen'){camOpen()}
-  else if(a==='offsearch'){var qe=$('#ingq');offSearch(qe?qe.value:'')}
-  else if(a==='offpick'){var oo=ui.ing&&ui.ing.offr&&ui.ing.offr[+b.dataset.i];if(oo){offApply(oo.code||'',oo);ui.ing.offr=null;render()}}
-  else if(a==='barlook'){var ce=$('#ingcode');barLookup(ce?ce.value:'')}
   else if(a==='ingnew'){ui.ing=ingBlank();ui.plato=null;render();scrollTo2('form[data-form="ingr"]')}
   else if(a==='ingedit'){var ig=S.ingr.filter(function(x){return x.id===b.dataset.id})[0];if(ig){ui.ing={id:ig.id,name:ig.name,kcal:ig.kcal,prot:ig.prot,carbs:ig.carbs,fat:ig.fat,sugar:ig.sugar,base:100,unit:ig.unit||'',ug:ig.ug||'',raw:'',msg:'',busy:false,del:false};ui.plato=null;render();scrollTo2('form[data-form="ingr"]')}}
   else if(a==='ingcancel'){ui.ing=null;render()}
