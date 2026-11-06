@@ -1805,7 +1805,7 @@ function offMap(p){
 }
 function offSearch(q){
   var g=ui.ing;q=String(q||'').trim();if(!g)return;if(q.length<3){g.msg='Escribe al menos 3 letras (por ejemplo «pavo hacendado»).';render();return}
-  g.busy=true;ocrMsg('Buscando «'+q+'» en productos de Mercadona…');
+  g.busy=true;g.offr=null;g.q=q;ocrMsg('Buscando «'+q+'» en productos de Mercadona…');render();
   return fetch('https://world.openfoodfacts.org/cgi/search.pl?search_simple=1&action=process&json=1&page_size=10&tagtype_0=stores&tag_contains_0=contains&tag_0=mercadona&fields=code,product_name,brands,serving_quantity,nutriments&search_terms='+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(j){
     var g2=ui.ing;if(!g2)return;g2.busy=false;
     g2.offr=((j&&j.products)||[]).map(offMap).filter(Boolean).slice(0,6);
@@ -1813,6 +1813,7 @@ function offSearch(q){
     render();
   }).catch(function(){var g3=ui.ing;if(g3){g3.busy=false;g3.msg='No se pudo buscar (¿sin conexión?). Prueba con el código de barras o escribe los datos.'}render()});
 }
+document.addEventListener('keydown',function(e){var t=e.target;if(t&&(t.id==='ingq'||t.id==='ingcode')&&e.key==='Enter'){e.preventDefault();if(t.id==='ingq')offSearch(t.value);else barLookup(t.value)}});
 function offPicks(){
   var g=ui.ing;if(!g||!g.offr||!g.offr.length)return '';
   return '<div style="display:flex;flex-direction:column;gap:8px;margin:0 0 12px" role="group" aria-label="Productos encontrados">'+g.offr.map(function(o,i){
