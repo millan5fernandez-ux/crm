@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#ff3b3b"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Millán CRM"><meta name="apple-mobile-web-app-status-bar-style" content="default"><script>if('serviceWorker' in navigator&&location.protocol==='https:'||location.hostname==='localhost')navigator.serviceWorker.register('sw.js').catch(function(){})</script>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#ff3b3b"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Millán CRM"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Millán CRM</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23ff3b3b%22/%3E%3Cpath d=%22M7 25V7h4l5 8 5-8h4v18h-4V14.5l-4.2 6.6h-1.6L11 14.5V25z%22 fill=%22%230b0b0b%22/%3E%3Crect x=%2225%22 y=%223%22 width=%224%22 height=%224%22 fill=%22%230b0b0b%22/%3E%3C/svg%3E">
@@ -1400,7 +1400,7 @@ VIEWS.gym=function(){
   var best=pts.length?Math.max.apply(null,pts.map(function(p){return p.y})):null;
   var title=gw===0?'Esta semana':'Semana del '+fshort(ws);
   return '<div class="bar"><h2>Gym</h2><div class="nav"><button class="btn" data-act="gweek" data-d="-1" aria-label="Semana anterior">←</button><strong>'+esc(title)+'</strong><button class="btn" data-act="gweek" data-d="1" aria-label="Semana siguiente"'+(gw>=0?' disabled':'')+'>→</button>'+(gw!==0?'<button class="btn" data-act="gweek0">Hoy</button>':'')+'</div></div>'+
-  hevyCard()+aforoCard()+'<div class="gpanel"><div class="bar"><h3 style="margin:0">Esta semana · datos</h3><div class="fa" style="margin:0"><button class="btn" type="button" data-act="gstats" aria-expanded="'+(ui.gstats!==false)+'">'+(ui.gstats!==false?'Ocultar':'Mostrar')+'</button></div></div>'+
+  gymAsk()+(ui.gymYes||ui.hv||ui.hvmsg?hevyCard():'')+aforoCard()+'<div class="gpanel"><div class="bar"><h3 style="margin:0">Esta semana · datos</h3><div class="fa" style="margin:0"><button class="btn" type="button" data-act="gstats" aria-expanded="'+(ui.gstats!==false)+'">'+(ui.gstats!==false?'Ocultar':'Mostrar')+'</button></div></div>'+
   (ui.gstats!==false?'<div class="gpbody">'+
   '<div class="tiles">'+
     tile('Sesiones',String(went),'/ 7 días','','Días que has ido')+
@@ -1785,7 +1785,9 @@ document.addEventListener('click',function(e){
   else if(a==='tourquit'){ui.tour=null;ui.mealDef=null;go('escritorio')}
   else if(a==='gstats'){ui.gstats=(ui.gstats===false);render()}
   else if(a==='afororef'){var fr=document.getElementById('aforofr');if(fr)fr.src=AFORO_URL+(AFORO_URL.indexOf('?')>-1?'&':'?')+'_='+Date.now()}
-  else if(a==='hvgo'){hevyGo()}
+  else if(a==='gymyes'){ui.gymYes=true;ui.hvmsg='';render();var hf=document.getElementById('hvfile');if(hf){hf.click();var gc=document.getElementById('hvfile');if(gc&&gc.scrollIntoView)gc.scrollIntoView({block:'center'})}}
+  else if(a==='gymno'){var tt=today();S.gymdays=S.gymdays.filter(function(g){return g.date!==tt});S.gymdays.push({id:uid8(),date:tt,went:false,routine:[],note:''});ui.gymYes=false;ui.hv=null;ui.hvmsg='';commit()}
+  else if(a==='hvgo'){ui.gymYes=false;hevyGo()}
   else if(a==='hvno'){ui.hv=null;ui.hvmsg='';render()}
   else if(a==='sbsync'){sbSay('Sincronizando…');sbPull().then(function(){flush();sbSay('Sincronizado')})}
   else if(a==='clear-example'){snap('antes de borrar ejemplos');S.example=false;S.gastos=[];S.ingresos=[];S.gym=[];S.comida=[];S.cuerpo=[];S.plans=[];S.gymdays=[];commit()}
@@ -2603,6 +2605,13 @@ function hvParse(txt){
   if(!list.length)throw new Error('sin datos');
   var map={};Object.keys(names).forEach(function(n){var known='';S.gym.forEach(function(g){if(!known&&g.exercise.toLowerCase()===n.toLowerCase())known=g.muscle});map[n]=known||hvGuess(origOf[n])||hvGuess(n)});
   return {days:list,map:map,names:names,skipped:skipped,sets:sets,over:true};
+}
+/* flujo diario: ¿has ido al gym hoy? Sí → importar el CSV de Hevy; No → se guarda el día como descanso */
+function gymAsk(){
+  var t=today(),has=S.gym.some(function(g){return g.date===t}),gd=S.gymdays.filter(function(g){return g.date===t})[0],went=has||(gd&&gd.went),rest=!went&&gd&&!gd.went;
+  var st=went?'Hoy entrenaste ✓':rest?'Hoy: descanso guardado 😴':'Pendiente de apuntar';
+  return '<div class="card" id="gymask" style="margin:0 0 14px"><div class="bar"><h3 style="margin:0">¿Has ido al gym hoy?</h3><span class="ts">'+esc(st)+'</span></div>'+
+   '<div class="fa" style="margin-top:12px"><button class="btn primary" type="button" data-act="gymyes">Sí, importar CSV de Hevy</button>'+(went?'':'<button class="btn" type="button" data-act="gymno">No, día de descanso</button>')+'</div></div>';
 }
 function hevyCard(){
   var h=ui.hv,body='';

@@ -1448,7 +1448,7 @@ VIEWS.gym=function(){
   var best=pts.length?Math.max.apply(null,pts.map(function(p){return p.y})):null;
   var title=gw===0?'Esta semana':'Semana del '+fshort(ws);
   return '<div class="bar"><h2>Gym</h2><div class="nav"><button class="btn" data-act="gweek" data-d="-1" aria-label="Semana anterior">←</button><strong>'+esc(title)+'</strong><button class="btn" data-act="gweek" data-d="1" aria-label="Semana siguiente"'+(gw>=0?' disabled':'')+'>→</button>'+(gw!==0?'<button class="btn" data-act="gweek0">Hoy</button>':'')+'</div></div>'+
-  hevyCard()+aforoCard()+'<div class="gpanel"><div class="bar"><h3 style="margin:0">Esta semana · datos</h3><div class="fa" style="margin:0"><button class="btn" type="button" data-act="gstats" aria-expanded="'+(ui.gstats!==false)+'">'+(ui.gstats!==false?'Ocultar':'Mostrar')+'</button></div></div>'+
+  gymAsk()+(ui.gymYes||ui.hv||ui.hvmsg?hevyCard():'')+aforoCard()+'<div class="gpanel"><div class="bar"><h3 style="margin:0">Esta semana · datos</h3><div class="fa" style="margin:0"><button class="btn" type="button" data-act="gstats" aria-expanded="'+(ui.gstats!==false)+'">'+(ui.gstats!==false?'Ocultar':'Mostrar')+'</button></div></div>'+
   (ui.gstats!==false?'<div class="gpbody">'+
   '<div class="tiles">'+
     tile('Sesiones',String(went),'/ 7 días','','Días que has ido')+
@@ -1834,7 +1834,9 @@ document.addEventListener('click',function(e){
   else if(a==='demoreset'){snap('antes de restablecer demo');seedDemo();ui.sess=null;commit()}
   else if(a==='gstats'){ui.gstats=(ui.gstats===false);render()}
   else if(a==='afororef'){var fr=document.getElementById('aforofr');if(fr)fr.src=AFORO_URL+(AFORO_URL.indexOf('?')>-1?'&':'?')+'_='+Date.now()}
-  else if(a==='hvgo'){hevyGo()}
+  else if(a==='gymyes'){ui.gymYes=true;ui.hvmsg='';render();var hf=document.getElementById('hvfile');if(hf){hf.click();var gc=document.getElementById('hvfile');if(gc&&gc.scrollIntoView)gc.scrollIntoView({block:'center'})}}
+  else if(a==='gymno'){var tt=today();S.gymdays=S.gymdays.filter(function(g){return g.date!==tt});S.gymdays.push({id:uid8(),date:tt,went:false,routine:[],note:''});ui.gymYes=false;ui.hv=null;ui.hvmsg='';commit()}
+  else if(a==='hvgo'){ui.gymYes=false;hevyGo()}
   else if(a==='hvno'){ui.hv=null;ui.hvmsg='';render()}
   else if(a==='sbsync'){sbSay('Sincronizando…');sbPull().then(function(){flush();sbSay('Sincronizado')})}
   else if(a==='clear-example'){snap('antes de borrar ejemplos');S.example=false;S.gastos=[];S.ingresos=[];S.gym=[];S.comida=[];S.cuerpo=[];S.plans=[];S.gymdays=[];commit()}
@@ -2652,6 +2654,13 @@ function hvParse(txt){
   if(!list.length)throw new Error('sin datos');
   var map={};Object.keys(names).forEach(function(n){var known='';S.gym.forEach(function(g){if(!known&&g.exercise.toLowerCase()===n.toLowerCase())known=g.muscle});map[n]=known||hvGuess(origOf[n])||hvGuess(n)});
   return {days:list,map:map,names:names,skipped:skipped,sets:sets,over:true};
+}
+/* flujo diario: ¿has ido al gym hoy? Sí → importar el CSV de Hevy; No → se guarda el día como descanso */
+function gymAsk(){
+  var t=today(),has=S.gym.some(function(g){return g.date===t}),gd=S.gymdays.filter(function(g){return g.date===t})[0],went=has||(gd&&gd.went),rest=!went&&gd&&!gd.went;
+  var st=went?'Hoy entrenaste ✓':rest?'Hoy: descanso guardado 😴':'Pendiente de apuntar';
+  return '<div class="card" id="gymask" style="margin:0 0 14px"><div class="bar"><h3 style="margin:0">¿Has ido al gym hoy?</h3><span class="ts">'+esc(st)+'</span></div>'+
+   '<div class="fa" style="margin-top:12px"><button class="btn primary" type="button" data-act="gymyes">Sí, importar CSV de Hevy</button>'+(went?'':'<button class="btn" type="button" data-act="gymno">No, día de descanso</button>')+'</div></div>';
 }
 function hevyCard(){
   var h=ui.hv,body='';
