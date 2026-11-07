@@ -2286,7 +2286,8 @@ function initScene(){
   var zm=zone('metas',0,-7.8,'#539df5',5.8,3.4,4.9),Z=zm.group;
   [-1.3,1.3].forEach(function(x){add(Z,Bx(.12,2.6,.12),'#6b5442',x,1.3,0)});
   add(Z,Bx(3.4,2.5,.14),'#ffffff',0,2.6,0);
-  add(Z,Bx(3.4,.55,.16),'#6250d6',0,3.62,.01);
+  /* la cabecera sobresale unos milímetros por los lados y por detrás para que no comparta caras con el tablero (evita el parpadeo de texturas) */
+  add(Z,Bx(3.46,.56,.2),'#6250d6',0,3.62,.015);
   [-1,0,1].forEach(function(x){add(Z,Cy(.06,.06,.34,10),'#c9d0d6',x,3.95,.05)});
   var calCells=[];
   for(var cr=0;cr<4;cr++)for(var cc=0;cc<7;cc++){calCells.push(add(Z,Bx(.36,.3,.04),(cr*7+cc)%9===0?'#d9d3ff':'#eef0f4',-1.35+cc*.45,3.15-cr*.4,.1))}
