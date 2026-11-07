@@ -427,6 +427,7 @@ body::before,body::after{display:none!important}
 #top{grid-area:top;background:var(--card);border-right:1px solid var(--line);padding:14px 14px 6px;display:block}
 .logo{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--page);padding:10px 12px;border-radius:2px;text-decoration:none}
 .logo-mark{width:34px;height:34px;border-radius:2px;background:var(--accent);color:#0b0b0b;box-shadow:none;display:grid;place-items:center}
+.logo-mark{overflow:hidden}.logo-av{width:100%;height:100%;object-fit:cover;display:block}
 .logo-t strong{font:700 18px var(--font-display);letter-spacing:-.02em;text-transform:uppercase;color:var(--page)}
 .logo-t small{font:500 10px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--page);opacity:.65}
 #side{grid-area:nav;background:var(--card);border:0;border-right:1px solid var(--line);border-radius:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;padding:10px 14px 14px;gap:4px;overflow-y:auto;position:static}
@@ -2195,19 +2196,9 @@ function initScene(){
   add(seat,Bx(1.0,1.3,.5),'#1db954',0,2.05,.05);
   add(seat,Cy(.14,.16,.2),'#f0c7a0',0,2.8,0);
   var headG=new T.Group();headG.position.set(0,3.15,0);seat.add(headG);
-  var AVATAR='';
-  var headM=add(headG,Sp(.4),'#f0c7a0',0,0,0);
+  add(headG,Sp(.4),'#f0c7a0',0,0,0);
   var hair=add(headG,Sp(.43),'#2b211b',0,.05,.1);hair.scale.set(1,.95,1);
-  var ear1=add(headG,Sp(.07),'#f0c7a0',-.4,0,0),ear2=add(headG,Sp(.07),'#f0c7a0',.4,0,0);
-  if(AVATAR.length>40){
-    /* retrato del usuario: plano que siempre mira a la cámara; la esfera solo da sombra */
-    hair.visible=ear1.visible=ear2.visible=false;
-    headM.material=new T.MeshBasicMaterial({colorWrite:false,depthWrite:false});
-    var avTex=new T.TextureLoader().load(AVATAR,function(){if(typeof requestRender==='function')requestRender()});
-    avTex.encoding=T.sRGBEncoding;
-    var avSp=new T.Sprite(new T.SpriteMaterial({map:avTex,transparent:true}));
-    avSp.scale.set(1.25,1.75,1);avSp.position.set(0,.3,0);headG.add(avSp);
-  }
+  add(headG,Sp(.07),'#f0c7a0',-.4,0,0);add(headG,Sp(.07),'#f0c7a0',.4,0,0);
   var arms=[-1,1].map(function(s){
     var p=new T.Group();p.position.set(s*.62,2.55,0);p.rotation.x=-.2;seat.add(p);
     add(p,Bx(.24,.24,1.7),'#1db954',0,-.1,-.85);
