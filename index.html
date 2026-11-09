@@ -1157,6 +1157,7 @@ VIEWS.resumen=function(){
   var w=S.cuerpo.filter(function(c){return c.weight!=null}).sort(function(a,b){return a.date<b.date?-1:1});
   var lw=w[w.length-1],ref=lw?w.filter(function(c){return c.date<=addDays(lw.date,-7)}).pop():null;
   var delta=lw&&ref?lw.weight-ref.weight:null;
+  var mw=monthW(today().slice(0,7)),pw=monthW(prevYm(today().slice(0,7)));
   var feed=[].concat(
     S.gastos.map(function(g){return {date:g.date,id:g.id,k:'Gasto',t:g.concept,v:eur(g.amount)}}),
     S.comida.map(function(c){return {date:c.date,id:c.id,k:'Comida',t:c.name,v:num(c.kcal)+' kcal'}}),
@@ -1166,7 +1167,7 @@ VIEWS.resumen=function(){
     tile('Gasto del mes',eur(gm),'','','Ingresos '+eur(monthInc(ym))+' · '+balPill(monthInc(ym),gm))+
     tile('Calorías hoy',num(kc),'/ '+num(S.set.kcal)+' kcal',meter(kc,S.set.kcal,'var(--s2)'),kc?num(Math.max(0,S.set.kcal-kc))+' kcal por tomar':'Aún sin registrar')+
     tile('Series esta semana',num(sets),'',meter(sets,totGoal(),'var(--s3)'),new Set(wk.map(function(g){return g.date})).size+' sesiones')+
-    tile('Peso',lw?num(lw.weight,1):'—','kg','',delta==null?'Sin comparación semanal':(delta>0?'+':'')+num(delta,1)+' kg en 7 días')+
+    tile('Peso · media del mes',mw?num(mw.avg,1):'—','kg','',!mw?'Sin pesadas este mes':(pw?((mw.avg-pw.avg>0?'+':'')+num(mw.avg-pw.avg,1)+' kg vs mes anterior'):'Media de '+mw.n+(mw.n===1?' pesada':' pesadas')))+
   '</div>'+
   '<div class="grid">'+
     '<div class="card"><h3>Gasto · últimos 14 días</h3>'+gastoCols(t,14)+'</div>'+
@@ -1930,6 +1931,8 @@ function setDrawer(open){
   var d=$('#drawer');
   if(d){d.inert=!open;d.setAttribute('aria-hidden',open?'false':'true');if(open)d.scrollTop=0}
 }
+function monthW(ym){var a=S.cuerpo.filter(function(c){return c.weight!=null&&c.date.startsWith(ym)});return a.length?{avg:sum(a,function(c){return c.weight})/a.length,n:a.length,last:a.sort(function(x,y){return x.date<y.date?-1:1})[a.length-1]}:null}
+function prevYm(ym){var y=+ym.slice(0,4),m=+ym.slice(5,7)-1;if(m<1){m=12;y--}return y+'-'+('0'+m).slice(-2)}
 function kpis(){
   var t=today(),ym=t.slice(0,7),wk=weekItems();
   var w=S.cuerpo.filter(function(c){return c.weight!=null}).sort(function(a,b){return a.date<b.date?-1:1});
@@ -1940,7 +1943,7 @@ function kpis(){
     kc:sum(S.comida.filter(function(c){return c.date===t}),function(c){return c.kcal}),
     sets:sum(wk,wsets),
     sess:new Set(wk.map(function(g){return g.date}).concat(S.gymdays.filter(function(g){return g.went&&g.date>=weekStart(t)&&g.date<=addDays(weekStart(t),6)}).map(function(g){return g.date}))).size,
-    w:lw?lw.weight:null
+    w:(function(){var m=monthW(ym);return m?m.avg:null})(),wn:(function(){var m=monthW(ym);return m?m.n:0})()
   };
 }
 function feedItems(n){
@@ -1973,7 +1976,7 @@ function renderHud(){
     ['gastos','Gasto del mes',eur(k.gm),'','Ingresos '+eur(k.inc)],
     ['comida','Calorías hoy',num(k.kc),'/ '+num(S.set.kcal),kcSub],
     ['gym','Series esta semana',num(k.sets),'',k.sess+' sesiones'],
-    ['cuerpo','Peso',k.w!=null?num(k.w,1):'—','kg',(moodOf(latestMood())?'Ánimo: '+moodOf(latestMood()).l:'Último registro')],
+    ['cuerpo','Peso · media del mes',k.w!=null?num(k.w,1):'—','kg',k.wn?('Media de '+k.wn+(k.wn===1?' pesada':' pesadas')):'Sin pesadas este mes'],
     ['metas','Próximo plan',np?esc(np.title):'—','',np?relDay(np.date)+(np.time?' · '+esc(np.time):''):'Añade un plan','wide']
   ];
   var el=$('#kpis');
