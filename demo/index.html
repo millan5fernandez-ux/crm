@@ -863,6 +863,9 @@ var S=EMPTY();
 var raw=null;try{raw=localStorage.getItem(LS);if(raw){var o=JSON.parse(raw);if(o&&o.v===1)adopt(o)}}catch(e){}
 seedDemo();
 
+/* plato de ejemplo propio (la demo lo vacía) */
+var PLATO_SEED=[];var _NOSEED=[{id:'preentreno1',v:2,name:'Preentreno',meal:'Snack',kcal:380,prot:12.4,carbs:61.6,fat:9,sugar:null,desc:'30 g crema de arroz · 30 g copos de maíz · 200 ml leche entera · 10 g copos de avena'}];
+try{if(PLATO_SEED.length&&!localStorage.getItem(LS+'-seedp')){PLATO_SEED.forEach(function(p){if(!S.platos.some(function(x){return x.id===p.id}))S.platos.push(p)});localStorage.setItem(LS+'-seedp','1')}}catch(e){}
 
 /* ===== Demo: datos ficticios relativos a hoy ===== */
 function seedDemo(){
@@ -1527,8 +1530,26 @@ VIEWS.comida=function(){
   '<div class="grid"><div class="card"><h3>Calorías del día</h3><p class="tv">'+num(kc)+'<small>/ '+num(S.set.kcal)+' kcal</small></p>'+meter(kc,S.set.kcal,kc>S.set.kcal*1.05?'var(--bad)':'var(--s2)')+'<p class="ts">'+(kc>S.set.kcal?pill('warn',num(kc-S.set.kcal)+' kcal por encima'):num(S.set.kcal-kc)+' kcal por tomar')+' · Proteína '+num(p)+' / '+num(S.set.prot)+' g</p><div style="margin-top:14px">'+stack+'</div></div>'+
   '<div class="card"><h3>Últimos 7 días</h3>'+kcalCols(day,7)+'</div></div>'+
   macroCard(it)+
+  platosCard()+
   '<div class="card"><h3>Registro del día</h3><div id="list">'+LISTS.comida()+'</div></div>';
 };
+function myPlatos(){return S.platos.filter(function(p){return p.v===2})}
+function platosCard(){
+  var e=curEdit('platos'),L=myPlatos();
+  var form=formWrap('platos',e?'Editar plato':'Nuevo plato',
+    fld('platos','name','Nombre','text',e?e.name:'','required maxlength="50" placeholder="Preentreno"','wide')+
+    sel('platos','meal','Momento',MEALS,e?e.meal:'Comida')+
+    fld('platos','kcal','kcal','number',e?e.kcal:'','min="0" step="any" inputmode="numeric" placeholder="auto"')+
+    fld('platos','prot','Prot (g)','number',e&&e.prot!=null?e.prot:'','min="0" step="any" inputmode="decimal"')+
+    fld('platos','carbs','Hidratos (g)','number',e&&e.carbs!=null?e.carbs:'','min="0" step="any" inputmode="decimal"')+
+    fld('platos','fat','Grasas (g)','number',e&&e.fat!=null?e.fat:'','min="0" step="any" inputmode="decimal"')+
+    fld('platos','sugar','Azúcares (g)','number',e&&e.sugar!=null?e.sugar:'','min="0" step="any" inputmode="decimal"')+
+    fld('platos','desc','Ingredientes y cantidades','text',e?e.desc||'':'','maxlength="160" placeholder="30 g crema de arroz · 200 ml leche"','full'));
+  var day=ui.day||today();
+  var list=L.length?'<ul class="rows">'+L.map(function(p){
+    return '<li class="row"><span class="rd">'+(p.prot!=null?'P '+num(p.prot):'')+'</span><span><span class="rt" style="display:block">'+esc(p.name)+'</span><span style="display:block;color:var(--ink2);font-size:13px">'+esc(p.meal)+(p.desc?' · '+esc(p.desc):'')+(p.carbs!=null?' · H '+num(p.carbs)+' g · G '+num(p.fat||0)+' g':'')+'</span><span style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px"><button class="ic" data-act="platoadd" data-id="'+p.id+'">Añadir a '+(day===today()?'hoy':esc(fshort(day)))+'</button>'+acts('platos',p.id)+'</span></span><span class="rv">'+num(p.kcal)+' kcal</span></li>'}).join('')+'</ul>':'<p class="empty">Aún no tienes platos guardados.</p>';
+  return '<div class="card"><h3>Mis platos</h3>'+list+'</div>'+form;
+}
 LISTS.comida=function(){
   var day=ui.day||today(),it=S.comida.filter(function(c){return c.date===day});
   if(!it.length)return '<p class="empty">Nada registrado este día.</p>';
@@ -1816,10 +1837,11 @@ document.addEventListener('click',function(e){
   var a=b.dataset.act,t=b.dataset.t,id=b.dataset.id;
   if(a==='edit'){ui.edit={t:t,id:id};ui.del='';render();var f=$('form[data-form="'+t+'"]');if(f)f.scrollIntoView({block:'center'})}
   else if(a==='cancel'){ui.edit=null;render()}
+  else if(a==='platoadd'){var pl=S.platos.filter(function(x){return x.id===id})[0];if(pl){S.comida.push({id:uid8(),date:ui.day||today(),meal:pl.meal,name:pl.name,kcal:pl.kcal,prot:pl.prot,carbs:pl.carbs,fat:pl.fat,sugar:pl.sugar});try{scene3d.burst('comida')}catch(x){}commit()}}
   else if(a==='del'){
     var k=t+':'+id;
     if(ui.del===k){S[t]=S[t].filter(function(x){return x.id!==id});ui.del='';if(ui.edit&&ui.edit.id===id)ui.edit=null;commit()}
-    else{ui.del=k;refreshList()}
+    else{ui.del=k;if(t==='platos')render();else refreshList()}
   }
   else if(a==='month'){var m=ui.month||today().slice(0,7),d=new Date(+m.slice(0,4),+m.slice(5)-1+Number(b.dataset.d),1);ui.month=d.getFullYear()+'-'+pad(d.getMonth()+1);ui.del='';render()}
   else if(a==='day'){var n=Number(b.dataset.d);ui.day=n?addDays(ui.day||today(),n):'';ui.del='';render()}
@@ -1916,6 +1938,12 @@ var HANDLERS={
     if(!f.name.trim())return;
     ui.day=f.date;
     save('comida',{date:f.date,meal:f.meal,name:f.name.trim(),kcal:k,prot:p,carbs:c,fat:g,sugar:su});
+  },
+  platos:function(f){
+    var p=fnum(f.prot),c=fnum(f.carbs),g=fnum(f.fat),k=fnum(f.kcal),su=fnum(f.sugar);
+    if(k==null)k=Math.round((p||0)*4+(c||0)*4+(g||0)*9);
+    if(!f.name.trim())return;
+    save('platos',{v:2,name:f.name.trim(),meal:f.meal,kcal:k,prot:p,carbs:c,fat:g,sugar:su,desc:(f.desc||'').trim().slice(0,160)});
   },
   cuerpon:function(f){HANDLERS.cuerpo(f)},
   cuerpo:function(f){
