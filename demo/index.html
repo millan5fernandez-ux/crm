@@ -1548,7 +1548,11 @@ function platosCard(){
   var day=ui.day||today();
   var list=L.length?'<ul class="rows">'+L.map(function(p){
     return '<li class="row"><span class="rd">'+(p.prot!=null?'P '+num(p.prot):'')+'</span><span><span class="rt" style="display:block">'+esc(p.name)+'</span><span style="display:block;color:var(--ink2);font-size:13px">'+esc(p.meal)+(p.desc?' · '+esc(p.desc):'')+(p.carbs!=null?' · H '+num(p.carbs)+' g · G '+num(p.fat||0)+' g':'')+'</span><span style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px"><button class="ic" data-act="platoadd" data-id="'+p.id+'">Añadir a '+(day===today()?'hoy':esc(fshort(day)))+'</button>'+acts('platos',p.id)+'</span></span><span class="rv">'+num(p.kcal)+' kcal</span></li>'}).join('')+'</ul>':'<p class="empty">Aún no tienes platos guardados.</p>';
-  return '<div class="card"><h3>Mis platos</h3>'+list+'</div>'+form;
+  var seen={};L.forEach(function(p){seen[p.name.toLowerCase()]=1});
+  var rec=S.comida.slice().sort(function(a,b){return a.date<b.date?1:-1}).filter(function(c){var k=c.name.toLowerCase();if(seen[k])return false;seen[k]=1;return true}).slice(0,8);
+  var rl=rec.length?'<p class="grp">Comidas guardadas (recientes)</p><ul class="rows">'+rec.map(function(c){
+    return '<li class="row"><span class="rd">'+(c.prot!=null?'P '+num(c.prot):'')+'</span><span><span class="rt" style="display:block">'+esc(c.name)+'</span><span style="display:block;color:var(--ink2);font-size:13px">'+esc(c.meal)+' · '+esc(fshort(c.date))+'</span><span style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px"><button class="ic" data-act="comidaadd" data-id="'+c.id+'">Añadir a '+(day===today()?'hoy':esc(fshort(day)))+'</button><button class="ic" data-act="tomeal" data-id="'+c.id+'">Guardar como plato</button></span></span><span class="rv">'+num(c.kcal)+' kcal</span></li>'}).join('')+'</ul>':'';
+  return '<div class="card"><h3>Mis platos y comidas</h3>'+list+rl+'</div>'+form;
 }
 LISTS.comida=function(){
   var day=ui.day||today(),it=S.comida.filter(function(c){return c.date===day});
@@ -1837,6 +1841,8 @@ document.addEventListener('click',function(e){
   var a=b.dataset.act,t=b.dataset.t,id=b.dataset.id;
   if(a==='edit'){ui.edit={t:t,id:id};ui.del='';render();var f=$('form[data-form="'+t+'"]');if(f)f.scrollIntoView({block:'center'})}
   else if(a==='cancel'){ui.edit=null;render()}
+  else if(a==='comidaadd'){var cm=S.comida.filter(function(x){return x.id===id})[0];if(cm){S.comida.push({id:uid8(),date:ui.day||today(),meal:cm.meal,name:cm.name,kcal:cm.kcal,prot:cm.prot,carbs:cm.carbs,fat:cm.fat,sugar:cm.sugar});try{scene3d.burst('comida')}catch(x){}commit()}}
+  else if(a==='tomeal'){var c2=S.comida.filter(function(x){return x.id===id})[0];if(c2){S.platos.push({id:uid8(),v:2,name:c2.name,meal:c2.meal,kcal:c2.kcal,prot:c2.prot,carbs:c2.carbs,fat:c2.fat,sugar:c2.sugar,desc:''});commit()}}
   else if(a==='platoadd'){var pl=S.platos.filter(function(x){return x.id===id})[0];if(pl){S.comida.push({id:uid8(),date:ui.day||today(),meal:pl.meal,name:pl.name,kcal:pl.kcal,prot:pl.prot,carbs:pl.carbs,fat:pl.fat,sugar:pl.sugar});try{scene3d.burst('comida')}catch(x){}commit()}}
   else if(a==='del'){
     var k=t+':'+id;
