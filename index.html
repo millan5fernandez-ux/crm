@@ -858,8 +858,24 @@ var S=EMPTY();
 try{var raw=localStorage.getItem(LS);if(raw){var o=JSON.parse(raw);if(o&&o.v===1)adopt(o)}}catch(e){}
 
 /* plato de ejemplo propio (la demo lo vacía) */
-var PLATO_SEED=[{id:'preentreno1',v:2,name:'Preentreno',meal:'Snack',kcal:380,prot:12.4,carbs:61.6,fat:9,sugar:null,desc:'30 g crema de arroz · 30 g copos de maíz · 200 ml leche entera · 10 g copos de avena'}];
-try{if(PLATO_SEED.length&&!localStorage.getItem(LS+'-seedp')){PLATO_SEED.forEach(function(p){if(!S.platos.some(function(x){return x.id===p.id}))S.platos.push(p)});localStorage.setItem(LS+'-seedp','1')}}catch(e){}
+var PLATO_SEED=[{id:'preentreno1',v:2,name:'Preentreno',meal:'Snack',kcal:380,prot:12.4,carbs:61.6,fat:9,sugar:null,desc:'30 g crema de arroz · 30 g copos de maíz · 200 ml leche entera · 10 g copos de avena'},
+{id:'batata-tortitas',v:2,name:'Batata y tortitas de trigo',meal:'Comida',kcal:534,prot:9.5,carbs:87.3,fat:14,sugar:20,desc:'200 g batata doce Hacendado · 2 tortitas de trigo (72 g)'}];
+try{PLATO_SEED.forEach(function(p){var k=LS+'-seedp-'+p.id;if(p.id==='preentreno1'&&localStorage.getItem(LS+'-seedp'))localStorage.setItem(k,'1');if(!localStorage.getItem(k)){if(!S.platos.some(function(x){return x.id===p.id}))S.platos.push(p);localStorage.setItem(k,'1')}})}catch(e){}
+var ALIM_SEED=[
+{id:'al-batata',name:'Batata doce Hacendado (congelada)',u:'g',kcal:163,prot:1.6,carbs:26,fat:5,sugar:9.5,ref:200},
+{id:'al-crema',name:'Crema de arroz Harrison Rice Cream 2.0 chocolate',u:'g',kcal:350,prot:9.4,carbs:73,fat:2.4,sugar:0.6,ref:30},
+{id:'al-lechesd',name:'Leche sin lactosa semidesnatada Hacendado',u:'ml',kcal:44,prot:3,carbs:4.6,fat:1.5,sugar:4.6,ref:200},
+{id:'al-lechee',name:'Leche entera Carrefour',u:'ml',kcal:63,prot:3.1,carbs:4.6,fat:3.6,sugar:4.6,ref:200},
+{id:'al-maiz',name:'Copos de maíz sin azúcares añadidos',u:'g',kcal:373,prot:6.7,carbs:82,fat:1.1,sugar:0.9,ref:30},
+{id:'al-avena',name:'Copos de avena extra suaves',u:'g',kcal:375,prot:14,carbs:59,fat:7,sugar:0.7,ref:40},
+{id:'al-tortitas',name:'Tortitas de trigo Hacendado',u:'g',kcal:289,prot:8.7,carbs:49,fat:5.5,sugar:1.4,ref:72,porc:{n:'tortita',g:36}},
+{id:'al-pan',name:'Pan de molde de trigo Hacendado',u:'g',kcal:240,prot:9.4,carbs:43,fat:2.6,sugar:3,ref:31.5,porc:{n:'rebanada',g:31.5}},
+{id:'al-pavo92',name:'Pechuga de pavo 92% Hacendado',u:'g',kcal:89,prot:19.5,carbs:0.5,fat:1.3,sugar:0.5,ref:50,porc:{n:'loncha',g:12,est:1}},
+{id:'al-pavococ',name:'Pechuga de pavo cocida Hacendado',u:'g',kcal:76,prot:16.5,carbs:1.3,fat:0.5,sugar:1.3,ref:50,porc:{n:'loncha',g:12,est:1}},
+{id:'al-pollo',name:'Pechuga de pollo ahumada Hacendado',u:'g',kcal:84,prot:16.9,carbs:1.3,fat:1.2,sugar:1.3,ref:50,porc:{n:'loncha',g:12,est:1}},
+{id:'al-queso',name:'Queso cremoso en lonchas Hacendado',u:'g',kcal:396,prot:19,carbs:1.3,fat:35,sugar:0.5,ref:15,porc:{n:'loncha',g:15,est:1}},
+{id:'al-patatas',name:'Patatas prefritas congeladas Hacendado',u:'g',kcal:146,prot:2.4,carbs:21,fat:5.4,sugar:0.5,ref:200}];
+try{if(!Array.isArray(S.ingr))S.ingr=[];var _old=['al-batata','al-crema','al-lechesd','al-lechee','al-maiz','al-avena'];ALIM_SEED.forEach(function(p){var k=LS+'-seedi-'+p.id;if(_old.indexOf(p.id)>=0&&localStorage.getItem(LS+'-seedi'))localStorage.setItem(k,'1');if(!localStorage.getItem(k)){if(!S.ingr.some(function(x){return x.id===p.id}))S.ingr.push(p);localStorage.setItem(k,'1')}})}catch(e){}
 var SB={url:'https://lqnzdqsywloerdrolyhy.supabase.co',key:'sb_publishable_xuS-THIncu_0AmVKQeJ7XQ_L-9U7TiW',ls:'bitacora-sb'};
 var sbS=null,sbNote='';
 function jwt(t){try{return JSON.parse(decodeURIComponent(escape(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))))}catch(e){return {}}}
@@ -1482,9 +1498,38 @@ VIEWS.comida=function(){
   '<div class="grid"><div class="card"><h3>Calorías del día</h3><p class="tv">'+num(kc)+'<small>/ '+num(S.set.kcal)+' kcal</small></p>'+meter(kc,S.set.kcal,kc>S.set.kcal*1.05?'var(--bad)':'var(--s2)')+'<p class="ts">'+(kc>S.set.kcal?pill('warn',num(kc-S.set.kcal)+' kcal por encima'):num(S.set.kcal-kc)+' kcal por tomar')+' · Proteína '+num(p)+' / '+num(S.set.prot)+' g</p><div style="margin-top:14px">'+stack+'</div></div>'+
   '<div class="card"><h3>Últimos 7 días</h3>'+kcalCols(day,7)+'</div></div>'+
   macroCard(it)+
-  platosCard()+
+  alimCard()+platosCard()+
   '<div class="card"><h3>Registro del día</h3><div id="list">'+LISTS.comida()+'</div></div>';
 };
+
+function r1(x){return Math.round(x*10)/10}
+function alimCalc(a,g){var k=g/100;function f(v){return v==null?null:r1(v*k)}return {kcal:Math.round((a.kcal||0)*k),prot:f(a.prot),carbs:f(a.carbs),fat:f(a.fat),sugar:f(a.sugar)}}
+function alimTxt(c){return 'P '+num(c.prot||0,1)+' · H '+num(c.carbs||0,1)+' · G '+num(c.fat||0,1)+(c.sugar!=null?' · Az '+num(c.sugar,1):'')}
+function alimGr(a){var g=ui.algr&&ui.algr[a.id];return g>0?g:(a.ref>0?a.ref:100)}
+function alimCard(){
+  var e=curEdit('ingr'),L=(S.ingr||[]).slice().sort(function(a,b){return a.name.localeCompare(b.name)});
+  var form=formWrap('ingr',e?'Editar alimento':'Nuevo alimento (valores por 100 g o 100 ml)',
+    fld('ingr','name','Nombre','text',e?e.name:'','required maxlength="60" placeholder="Batata doce Hacendado"','wide')+
+    sel('ingr','u','Unidad',['g','ml'],e?e.u:'g')+
+    fld('ingr','kcal','kcal por 100','number',e?e.kcal:'','min="0" step="any" inputmode="decimal" placeholder="auto"')+
+    fld('ingr','prot','Prot (g)','number',e&&e.prot!=null?e.prot:'','min="0" step="any" inputmode="decimal"')+
+    fld('ingr','carbs','Hidratos (g)','number',e&&e.carbs!=null?e.carbs:'','min="0" step="any" inputmode="decimal"')+
+    fld('ingr','fat','Grasas (g)','number',e&&e.fat!=null?e.fat:'','min="0" step="any" inputmode="decimal"')+
+    fld('ingr','sugar','Azúcares (g)','number',e&&e.sugar!=null?e.sugar:'','min="0" step="any" inputmode="decimal"')+
+    fld('ingr','ref','Cantidad habitual','number',e&&e.ref?e.ref:'','min="1" step="any" inputmode="decimal" placeholder="100"')+
+    fld('ingr','pn','Ración: nombre (opcional)','text',e&&e.porc?e.porc.n:'','maxlength="20" placeholder="tortita"')+
+    fld('ingr','pg','Ración: gramos','number',e&&e.porc?e.porc.g:'','min="1" step="any" inputmode="decimal" placeholder="36"'));
+  var day=ui.day||today();
+  var list=L.length?'<ul class="rows" id="alimrows">'+L.map(function(a){
+    var g=alimGr(a),c=alimCalc(a,g);
+    return '<li class="row" data-q="'+esc(a.name.toLowerCase())+'"><span class="rd" id="alk-'+a.id+'">'+num(c.kcal)+' kcal</span><span><span class="rt" style="display:block">'+esc(a.name)+'</span>'+
+      '<span style="display:block;color:var(--ink2);font-size:13px">Por 100 '+esc(a.u||'g')+': '+num(a.kcal||0)+' kcal · '+alimTxt(a)+'</span>'+
+      '<span id="alv-'+a.id+'" style="display:block;font-size:13px;margin-top:2px">'+alimTxt(c)+'</span>'+
+      '<span style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:6px"><label style="display:flex;gap:6px;align-items:center"><input type="number" class="alg" data-al="'+a.id+'" value="'+g+'" min="1" step="any" inputmode="decimal" aria-label="Cantidad de '+esc(a.name)+'" style="width:88px"> '+esc(a.u||'g')+'</label>'+(a.porc&&a.porc.g>0?'<label style="display:flex;gap:6px;align-items:center"><input type="number" class="alu" data-al="'+a.id+'" value="'+num(g/a.porc.g,2).replace(',','.')+'" min="0" step="any" inputmode="decimal" aria-label="'+esc(a.porc.n)+'s de '+esc(a.name)+'" style="width:70px"> '+esc(a.porc.n)+'s'+(a.porc.est?' <span class="ts" title="Peso estimado">(≈'+num(a.porc.g,1)+' g)</span>':' <span class="ts">('+num(a.porc.g,1)+' g)</span>')+'</label>':'')+
+      '<button class="ic" data-act="alimadd" data-id="'+a.id+'">Añadir a '+(day===today()?'hoy':esc(fshort(day)))+'</button>'+acts('ingr',a.id)+'</span></span></li>'}).join('')+'</ul>':'<p class="empty">Guarda un alimento con sus valores por 100 g y apúntalo luego solo con los gramos.</p>';
+  return '<div class="card"><div class="bar"><h3 style="margin:0">Mis alimentos · por gramos</h3><input id="alq" type="search" placeholder="Buscar…" aria-label="Buscar alimento" style="max-width:160px"></div>'+
+    '<p class="ts" style="margin:8px 0 10px">Cambia los gramos y los valores se recalculan al momento.</p><label class="f" style="margin:0 0 10px"><span>Momento</span><select id="alm">'+MEALS.map(function(m){return '<option'+(m===(ui.alMeal||'Comida')?' selected':'')+'>'+m+'</option>'}).join('')+'</select></label>'+list+'</div>'+form;
+}
 function myPlatos(){return S.platos.filter(function(p){return p.v===2})}
 function platosCard(){
   var e=curEdit('platos'),L=myPlatos();
@@ -1795,11 +1840,12 @@ document.addEventListener('click',function(e){
   else if(a==='cancel'){ui.edit=null;render()}
   else if(a==='comidaadd'){var cm=S.comida.filter(function(x){return x.id===id})[0];if(cm){S.comida.push({id:uid8(),date:ui.day||today(),meal:cm.meal,name:cm.name,kcal:cm.kcal,prot:cm.prot,carbs:cm.carbs,fat:cm.fat,sugar:cm.sugar});try{scene3d.burst('comida')}catch(x){}commit()}}
   else if(a==='tomeal'){var c2=S.comida.filter(function(x){return x.id===id})[0];if(c2){S.platos.push({id:uid8(),v:2,name:c2.name,meal:c2.meal,kcal:c2.kcal,prot:c2.prot,carbs:c2.carbs,fat:c2.fat,sugar:c2.sugar,desc:''});commit()}}
+  else if(a==='alimadd'){var al=(S.ingr||[]).filter(function(x){return x.id===id})[0],gi=document.querySelector('.alg[data-al="'+id+'"]'),gg=gi?fnum(gi.value):null;if(al&&gg>0){var cc=alimCalc(al,gg);S.comida.push({id:uid8(),date:ui.day||today(),meal:ui.alMeal||'Comida',name:al.name+' · '+num(gg,1)+' '+(al.u||'g')+(al.porc&&al.porc.g>0?' ('+num(gg/al.porc.g,1)+' '+al.porc.n+(Math.abs(gg/al.porc.g-1)<.05?'':'s')+')':''),kcal:cc.kcal,prot:cc.prot,carbs:cc.carbs,fat:cc.fat,sugar:cc.sugar});al.ref=gg;if(ui.algr)delete ui.algr[id];try{scene3d.burst('comida')}catch(x){}commit()}}
   else if(a==='platoadd'){var pl=S.platos.filter(function(x){return x.id===id})[0];if(pl){S.comida.push({id:uid8(),date:ui.day||today(),meal:pl.meal,name:pl.name,kcal:pl.kcal,prot:pl.prot,carbs:pl.carbs,fat:pl.fat,sugar:pl.sugar});try{scene3d.burst('comida')}catch(x){}commit()}}
   else if(a==='del'){
     var k=t+':'+id;
     if(ui.del===k){S[t]=S[t].filter(function(x){return x.id!==id});ui.del='';if(ui.edit&&ui.edit.id===id)ui.edit=null;commit()}
-    else{ui.del=k;if(t==='platos')render();else refreshList()}
+    else{ui.del=k;if(t==='platos'||t==='ingr')render();else refreshList()}
   }
   else if(a==='month'){var m=ui.month||today().slice(0,7),d=new Date(+m.slice(0,4),+m.slice(5)-1+Number(b.dataset.d),1);ui.month=d.getFullYear()+'-'+pad(d.getMonth()+1);ui.del='';render()}
   else if(a==='day'){var n=Number(b.dataset.d);ui.day=n?addDays(ui.day||today(),n):'';ui.del='';render()}
@@ -1854,6 +1900,9 @@ document.addEventListener('click',function(e){
 });
 document.addEventListener('input',function(e){
   var t=e.target;
+  if(t.classList&&t.classList.contains('alu')){var au=(S.ingr||[]).filter(function(x){return x.id===t.dataset.al})[0],nu=fnum(t.value);if(au&&au.porc&&nu>=0){var gu=Math.round(nu*au.porc.g*10)/10;ui.algr=ui.algr||{};ui.algr[au.id]=gu;var cu=alimCalc(au,gu),gi2=document.querySelector('.alg[data-al="'+au.id+'"]'),ku=$('#alk-'+au.id),vu=$('#alv-'+au.id);if(gi2)gi2.value=gu;if(ku)ku.textContent=num(cu.kcal)+' kcal';if(vu)vu.textContent=alimTxt(cu)}return}
+  if(t.classList&&t.classList.contains('alg')){var al=(S.ingr||[]).filter(function(x){return x.id===t.dataset.al})[0],g=fnum(t.value);if(al&&g>=0){ui.algr=ui.algr||{};ui.algr[al.id]=g;var c=alimCalc(al,g),k=$('#alk-'+al.id),v=$('#alv-'+al.id);if(k)k.textContent=num(c.kcal)+' kcal';if(v)v.textContent=alimTxt(c);if(al.porc&&al.porc.g>0){var ui2=document.querySelector('.alu[data-al="'+al.id+'"]');if(ui2)ui2.value=Math.round(g/al.porc.g*100)/100}}return}
+  if(t.id==='alq'){var q=t.value.trim().toLowerCase();document.querySelectorAll('#alimrows>li').forEach(function(li){li.hidden=q&&li.dataset.q.indexOf(q)<0});return}
   if(t.id==='q'){ui.q=t.value;refreshList()}
   else if(t.id==='gnote'&&ui.sess){ui.sess.note=t.value}
   else if(t.dataset&&t.dataset.k&&ui.sess){
@@ -1863,6 +1912,7 @@ document.addEventListener('input',function(e){
   }
 });
 document.addEventListener('change',function(e){
+  if(e.target.id==='alm'){ui.alMeal=e.target.value;return}
   if(e.target.id==='exsel'){ui.ex=e.target.value;render()}
   else if(e.target.id==='f-gastos-date'&&e.target.value){ui.date.gastos=e.target.value;ui.date.ingresos=e.target.value;if(ui.dsw)ui.dsw.gastos='';dsRefresh('gastos')}
   else if(e.target.tagName==='SELECT'&&e.target.dataset&&e.target.dataset.k&&ui.sess&&(e.target.dataset.f==='muscle'||e.target.dataset.f==='exercise')){
@@ -1895,6 +1945,12 @@ var HANDLERS={
     if(!f.name.trim())return;
     ui.day=f.date;
     save('comida',{date:f.date,meal:f.meal,name:f.name.trim(),kcal:k,prot:p,carbs:c,fat:g,sugar:su});
+  },
+  ingr:function(f){
+    var p=fnum(f.prot),c=fnum(f.carbs),g=fnum(f.fat),k=fnum(f.kcal),su=fnum(f.sugar),rf=fnum(f.ref);
+    if(k==null)k=Math.round((p||0)*4+(c||0)*4+(g||0)*9);
+    if(!f.name.trim())return;
+    var pg=fnum(f.pg),pn=(f.pn||'').trim().slice(0,20),o={name:f.name.trim(),u:f.u==='ml'?'ml':'g',kcal:k,prot:p,carbs:c,fat:g,sugar:su,ref:rf>0?rf:100};o.porc=(pg>0&&pn)?{n:pn,g:pg}:null;save('ingr',o);
   },
   platos:function(f){
     var p=fnum(f.prot),c=fnum(f.carbs),g=fnum(f.fat),k=fnum(f.kcal),su=fnum(f.sugar);
